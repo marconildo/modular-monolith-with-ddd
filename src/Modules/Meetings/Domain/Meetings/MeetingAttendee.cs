@@ -32,9 +32,12 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Domain.Meetings
 
         private bool _isRemoved;
 
+        private MoneyValue _fee;
+
+        private bool _isFeePaid;
+
         private MeetingAttendee()
         {
-
         }
 
         internal static MeetingAttendee CreateNew(
@@ -49,10 +52,10 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Domain.Meetings
         }
 
         private MeetingAttendee(
-            MeetingId meetingId, 
-            MemberId attendeeId, 
-            DateTime decisionDate, 
-            MeetingAttendeeRole role, 
+            MeetingId meetingId,
+            MemberId attendeeId,
+            DateTime decisionDate,
+            MeetingAttendeeRole role,
             int guestsNumber,
             MoneyValue eventFee)
         {
@@ -62,19 +65,25 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Domain.Meetings
             this._role = role;
             _guestsNumber = guestsNumber;
             _decisionChanged = false;
-
-            MoneyValue fee;
+            _isFeePaid = false;
 
             if (eventFee != MoneyValue.Undefined)
             {
-                fee = (1 + guestsNumber) * eventFee;
+                _fee = (1 + guestsNumber) * eventFee;
             }
             else
             {
-                fee = MoneyValue.Undefined;
+                _fee = MoneyValue.Undefined;
             }
 
-            this.AddDomainEvent(new MeetingAttendeeAddedDomainEvent(this.MeetingId, AttendeeId, decisionDate, role, guestsNumber, fee));
+            this.AddDomainEvent(new MeetingAttendeeAddedDomainEvent(
+                this.MeetingId,
+                AttendeeId,
+                decisionDate,
+                role.Value,
+                guestsNumber,
+                _fee.Value,
+                _fee.Currency));
         }
 
         internal void ChangeDecision()
@@ -98,7 +107,6 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Domain.Meetings
         internal bool IsActiveHost()
         {
             return this.IsActive() && _role == MeetingAttendeeRole.Host;
-
         }
 
         internal int GetAttendeeWithGuestsNumber()
@@ -131,6 +139,13 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Domain.Meetings
             _removingMemberId = removingMemberId;
 
             this.AddDomainEvent(new MeetingAttendeeRemovedDomainEvent(this.AttendeeId, this.MeetingId, reason));
+        }
+
+        internal void MarkFeeAsPayed()
+        {
+            _isFeePaid = true;
+
+            this.AddDomainEvent(new MeetingAttendeeFeePaidDomainEvent(this.MeetingId, this.AttendeeId));
         }
     }
 }

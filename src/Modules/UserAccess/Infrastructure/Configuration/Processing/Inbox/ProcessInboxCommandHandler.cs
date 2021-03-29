@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CompanyName.MyMeetings.BuildingBlocks.Application.Data;
 using CompanyName.MyMeetings.BuildingBlocks.Infrastructure;
 using CompanyName.MyMeetings.Modules.UserAccess.Application.Configuration.Commands;
 using Dapper;
@@ -24,16 +25,17 @@ namespace CompanyName.MyMeetings.Modules.UserAccess.Infrastructure.Configuration
         public async Task<Unit> Handle(ProcessInboxCommand command, CancellationToken cancellationToken)
         {
             var connection = this._sqlConnectionFactory.GetOpenConnection();
-            const string sql = "SELECT " +
-                               "[InboxMessage].[Id], " +
-                               "[InboxMessage].[Type], " +
-                               "[InboxMessage].[Data] " +
-                               "FROM [meetings].[InboxMessages] AS [InboxMessage] " +
-                               "WHERE [InboxMessage].[ProcessedDate] IS NULL";
+            string sql = "SELECT " +
+                         $"[InboxMessage].[Id] AS [{nameof(InboxMessageDto.Id)}], " +
+                         $"[InboxMessage].[Type] AS [{nameof(InboxMessageDto.Type)}], " +
+                         $"[InboxMessage].[Data] AS [{nameof(InboxMessageDto.Data)}] " +
+                         "FROM [users].[InboxMessages] AS [InboxMessage] " +
+                         "WHERE [InboxMessage].[ProcessedDate] IS NULL " +
+                         "ORDER BY [InboxMessage].[OccurredOn]";
 
             var messages = await connection.QueryAsync<InboxMessageDto>(sql);
 
-            const string sqlUpdateProcessedDate = "UPDATE [meetings].[InboxMessages] " +
+            const string sqlUpdateProcessedDate = "UPDATE [users].[InboxMessages] " +
                                                   "SET [ProcessedDate] = @Date " +
                                                   "WHERE [Id] = @Id";
 
@@ -47,7 +49,7 @@ namespace CompanyName.MyMeetings.Modules.UserAccess.Infrastructure.Configuration
 
                 try
                 {
-                    await _mediator.Publish((INotification) request, cancellationToken);
+                    await _mediator.Publish((INotification)request, cancellationToken);
                 }
                 catch (Exception e)
                 {

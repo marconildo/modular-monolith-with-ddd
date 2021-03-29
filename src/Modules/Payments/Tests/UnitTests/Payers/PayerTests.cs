@@ -13,12 +13,17 @@ namespace CompanyName.MyMeetings.Modules.Payments.Domain.UnitTests.Payers
         public void CreatePayer_IsSuccessful()
         {
             var payerId = Guid.NewGuid();
-            var payer = Payer.Create(payerId, "payerLogin", "payerEmail@mail.com",
-                "John", "Doe", "John Doe");
+            var payer = Payer.Create(
+                payerId,
+                "payerLogin",
+                "payerEmail@mail.com",
+                "John",
+                "Doe",
+                "John Doe");
 
             var payerCreated = AssertPublishedDomainEvent<PayerCreatedDomainEvent>(payer);
 
-            Assert.That(payerCreated.PayerId, Is.EqualTo(new PayerId(payerId)));
+            Assert.That(payerCreated.PayerId, Is.EqualTo(payerId));
         }
     }
 }

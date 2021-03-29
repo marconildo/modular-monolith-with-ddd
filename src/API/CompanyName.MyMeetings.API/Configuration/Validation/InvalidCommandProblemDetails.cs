@@ -1,4 +1,5 @@
-﻿using CompanyName.MyMeetings.BuildingBlocks.Application;
+﻿using System.Collections.Generic;
+using CompanyName.MyMeetings.BuildingBlocks.Application;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,10 +9,12 @@ namespace CompanyName.MyMeetings.API.Configuration.Validation
     {
         public InvalidCommandProblemDetails(InvalidCommandException exception)
         {
-            this.Title = exception.Message;
-            this.Status = StatusCodes.Status400BadRequest;
-            this.Detail = exception.Details;
-            this.Type = "https://somedomain/validation-error";
+            Title = "Command validation error";
+            Status = StatusCodes.Status400BadRequest;
+            Type = "https://somedomain/validation-error";
+            Errors = exception.Errors;
         }
+
+        public List<string> Errors { get; }
     }
 }

@@ -16,19 +16,17 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Application.Members.CreateMemb
             _commandsScheduler = commandsScheduler;
         }
 
-        public Task Handle(NewUserRegisteredIntegrationEvent notification, CancellationToken cancellationToken)
+        public async Task Handle(NewUserRegisteredIntegrationEvent notification, CancellationToken cancellationToken)
         {
-            _commandsScheduler.EnqueueAsync(new
+            await _commandsScheduler.EnqueueAsync(new
                 CreateMemberCommand(
                     Guid.NewGuid(),
                     notification.UserId,
                     notification.Login,
-                notification.Email,
+                    notification.Email,
                     notification.FirstName,
                     notification.LastName,
                     notification.Name));
-
-            return Task.CompletedTask;
         }
     }
 }

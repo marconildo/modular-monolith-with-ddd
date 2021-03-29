@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using CompanyName.MyMeetings.BuildingBlocks.Application.Data;
 using CompanyName.MyMeetings.BuildingBlocks.Infrastructure;
+using CompanyName.MyMeetings.BuildingBlocks.Infrastructure.Serialization;
 using CompanyName.MyMeetings.Modules.UserAccess.Application.Configuration.Commands;
 using CompanyName.MyMeetings.Modules.UserAccess.Application.Contracts;
 using Dapper;
@@ -40,22 +42,23 @@ namespace CompanyName.MyMeetings.Modules.UserAccess.Infrastructure.Configuration
             });
         }
 
-        private class AllPropertiesContractResolver : DefaultContractResolver
+        public async Task EnqueueAsync<T>(ICommand<T> command)
         {
-            protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+            var connection = this._sqlConnectionFactory.GetOpenConnection();
+
+            const string sqlInsert = "INSERT INTO [users].[InternalCommands] ([Id], [EnqueueDate] , [Type], [Data]) VALUES " +
+                                     "(@Id, @EnqueueDate, @Type, @Data)";
+
+            await connection.ExecuteAsync(sqlInsert, new
             {
-                var props = type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                    .Select(p => base.CreateProperty(p, memberSerialization))
-                    .Union(type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                        .Select(f => base.CreateProperty(f, memberSerialization)))
-                    .ToList();
-                props.ForEach(p =>
+                command.Id,
+                EnqueueDate = DateTime.UtcNow,
+                Type = command.GetType().FullName,
+                Data = JsonConvert.SerializeObject(command, new JsonSerializerSettings
                 {
-                    p.Writable = true;
-                    p.Readable = true;
-                });
-                return props;
-            }
+                    ContractResolver = new AllPropertiesContractResolver()
+                })
+            });
         }
     }
 }

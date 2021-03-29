@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using CompanyName.MyMeetings.BuildingBlocks.Application.Data;
 using CompanyName.MyMeetings.BuildingBlocks.Infrastructure;
 using CompanyName.MyMeetings.Modules.UserAccess.Application.Configuration.Queries;
 using Dapper;
@@ -24,8 +25,7 @@ namespace CompanyName.MyMeetings.Modules.UserAccess.Application.Authorization.Ge
                                "[UserPermission].[PermissionCode] AS [Code] " +
                                "FROM [users].[v_UserPermissions] AS [UserPermission] " +
                                "WHERE [UserPermission].UserId = @UserId";
-            var permissions = await connection.QueryAsync<UserPermissionDto>(sql, new {request.UserId});
-
+            var permissions = await connection.QueryAsync<UserPermissionDto>(sql, new { request.UserId });
 
             return permissions.AsList();
         }

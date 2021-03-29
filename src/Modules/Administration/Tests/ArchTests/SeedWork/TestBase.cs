@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using CompanyName.MyMeetings.Modules.Administration.Application.Contracts;
+using CompanyName.MyMeetings.Modules.Administration.Application.Members;
 using CompanyName.MyMeetings.Modules.Administration.Domain.MeetingGroupProposals;
 using CompanyName.MyMeetings.Modules.Administration.Infrastructure;
 using CompanyName.MyMeetings.Modules.Administration.Infrastructure.Domain;
@@ -13,9 +14,11 @@ namespace CompanyName.MyMeetings.Modules.Administration.ArchTests.SeedWork
 {
     public abstract class TestBase
     {
-        protected static Assembly ApplicationAssembly = typeof(CommandBase).Assembly;
-        protected static Assembly DomainAssembly = typeof(MeetingGroupProposal).Assembly;
-        protected static Assembly InfrastructureAssembly = typeof(AdministrationContext).Assembly;
+        protected static Assembly ApplicationAssembly => typeof(CreateMemberCommand).Assembly;
+
+        protected static Assembly DomainAssembly => typeof(MeetingGroupProposal).Assembly;
+
+        protected static Assembly InfrastructureAssembly => typeof(AdministrationContext).Assembly;
 
         protected static void AssertAreImmutable(IEnumerable<Type> types)
         {
@@ -31,6 +34,7 @@ namespace CompanyName.MyMeetings.Modules.Administration.ArchTests.SeedWork
 
             AssertFailingTypes(failingTypes);
         }
+
         protected static void AssertFailingTypes(IEnumerable<Type> types)
         {
             Assert.That(types, Is.Null.Or.Empty);

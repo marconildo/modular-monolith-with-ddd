@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using CompanyName.MyMeetings.Modules.Administration.Application.Configuration;
 using CompanyName.MyMeetings.Modules.Administration.Application.Configuration.Commands;
+using CompanyName.MyMeetings.Modules.Administration.Application.Configuration.Queries;
 using CompanyName.MyMeetings.Modules.Administration.Application.Contracts;
 using CompanyName.MyMeetings.Modules.Administration.ArchTests.SeedWork;
 using CompanyName.MyMeetings.Modules.Administration.Infrastructure.Configuration.Processing;
@@ -21,13 +22,13 @@ namespace CompanyName.MyMeetings.Modules.Administration.ArchTests.Application
         public void Command_Should_Be_Immutable()
         {
             var types = Types.InAssembly(ApplicationAssembly)
-                .That().Inherit(typeof(CommandBase))
-                .Or().Inherit(typeof(InternalCommandBase))
+                .That().Inherit(typeof(CommandBase<>))
+                .Or().Inherit(typeof(InternalCommandBase<>))
                 .Or().ImplementInterface(typeof(ICommand))
                 .Or().ImplementInterface(typeof(ICommand<>))
                 .GetTypes();
-            
-            AssertAreImmutable(types);         
+
+            AssertAreImmutable(types);
         }
 
         [Test]
@@ -35,8 +36,8 @@ namespace CompanyName.MyMeetings.Modules.Administration.ArchTests.Application
         {
             var types = Types.InAssembly(ApplicationAssembly)
                 .That().ImplementInterface(typeof(IQuery<>)).GetTypes();
-            
-            AssertAreImmutable(types);          
+
+            AssertAreImmutable(types);
         }
 
         [Test]
@@ -50,7 +51,7 @@ namespace CompanyName.MyMeetings.Modules.Administration.ArchTests.Application
                 .HaveNameEndingWith("CommandHandler")
                 .GetResult();
 
-             AssertArchTestResult(result);        
+            AssertArchTestResult(result);
         }
 
         [Test]
@@ -63,20 +64,7 @@ namespace CompanyName.MyMeetings.Modules.Administration.ArchTests.Application
                 .HaveNameEndingWith("QueryHandler")
                 .GetResult();
 
-            AssertArchTestResult(result);        
-        }
-
-        [Test]
-        public void InternalCommands_Should_Not_Be_Public()
-        {
-            var result = Types.InAssembly(ApplicationAssembly)
-                .That()
-                .Inherit(typeof(InternalCommandBase))
-                .Should()
-                .NotBePublic()
-                .GetResult();
-
-            AssertArchTestResult(result); 
+            AssertArchTestResult(result);
         }
 
         [Test]
@@ -89,21 +77,21 @@ namespace CompanyName.MyMeetings.Modules.Administration.ArchTests.Application
                     .ImplementInterface(typeof(ICommandHandler<>))
                 .Should().NotBePublic().GetResult().FailingTypes;
 
-            AssertFailingTypes(types); 
+            AssertFailingTypes(types);
         }
 
         [Test]
-        public void InternalCommand_Should_Have_Internal_Constructor_With_JsonConstructorAttribute()
+        public void InternalCommand_Should_Have_JsonConstructorAttribute()
         {
             var types = Types.InAssembly(ApplicationAssembly)
-                .That().Inherit(typeof(InternalCommandBase)).GetTypes();
+                .That().Inherit(typeof(InternalCommandBase<>)).GetTypes();
 
             var failingTypes = new List<Type>();
 
             foreach (var type in types)
             {
                 bool hasJsonConstructorDefined = false;
-                var constructors = type.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance);
+                var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
                 foreach (var constructorInfo in constructors)
                 {
                     var jsonConstructorAttribute = constructorInfo.GetCustomAttributes(typeof(JsonConstructorAttribute), false);
@@ -117,10 +105,10 @@ namespace CompanyName.MyMeetings.Modules.Administration.ArchTests.Application
                 if (!hasJsonConstructorDefined)
                 {
                     failingTypes.Add(type);
-                }               
+                }
             }
 
-            AssertFailingTypes(failingTypes); 
+            AssertFailingTypes(failingTypes);
         }
 
         [Test]
@@ -145,8 +133,8 @@ namespace CompanyName.MyMeetings.Modules.Administration.ArchTests.Application
                     failingTypes.Add(type);
                 }
             }
-            
-            AssertFailingTypes(failingTypes);      
+
+            AssertFailingTypes(failingTypes);
         }
     }
 }

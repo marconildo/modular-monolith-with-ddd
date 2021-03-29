@@ -16,19 +16,17 @@ namespace CompanyName.MyMeetings.Modules.Payments.Application.Payers.CreatePayer
             _commandsScheduler = commandsScheduler;
         }
 
-        public Task Handle(NewUserRegisteredIntegrationEvent notification, CancellationToken cancellationToken)
+        public async Task Handle(NewUserRegisteredIntegrationEvent notification, CancellationToken cancellationToken)
         {
-            _commandsScheduler.EnqueueAsync(new 
+            await _commandsScheduler.EnqueueAsync(new
                 CreatePayerCommand(
                     Guid.NewGuid(),
-                    notification.UserId, 
+                    notification.UserId,
                     notification.Login,
-                    notification.Email, 
-                    notification.FirstName, 
-                    notification.LastName, 
+                    notification.Email,
+                    notification.FirstName,
+                    notification.LastName,
                     notification.Name));
-
-            return Task.CompletedTask;
         }
     }
 }

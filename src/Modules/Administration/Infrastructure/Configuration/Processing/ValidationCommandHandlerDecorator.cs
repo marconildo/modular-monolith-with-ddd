@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CompanyName.MyMeetings.BuildingBlocks.Application;
-using CompanyName.MyMeetings.Modules.Administration.Application.Configuration;
 using CompanyName.MyMeetings.Modules.Administration.Application.Configuration.Commands;
 using CompanyName.MyMeetings.Modules.Administration.Application.Contracts;
 using FluentValidation;
@@ -12,13 +10,14 @@ using MediatR;
 
 namespace CompanyName.MyMeetings.Modules.Administration.Infrastructure.Configuration.Processing
 {
-    internal class ValidationCommandHandlerDecorator<T> : ICommandHandler<T> where T:ICommand
+    internal class ValidationCommandHandlerDecorator<T> : ICommandHandler<T>
+        where T : ICommand
     {
         private readonly IList<IValidator<T>> _validators;
         private readonly ICommandHandler<T> _decorated;
 
         public ValidationCommandHandlerDecorator(
-            IList<IValidator<T>> validators, 
+            IList<IValidator<T>> validators,
             ICommandHandler<T> decorated)
         {
             this._validators = validators;
@@ -35,16 +34,7 @@ namespace CompanyName.MyMeetings.Modules.Administration.Infrastructure.Configura
 
             if (errors.Any())
             {
-                var errorBuilder = new StringBuilder();
-
-                errorBuilder.AppendLine("Invalid command, reason: ");
-
-                foreach (var error in errors)
-                {
-                    errorBuilder.AppendLine(error.ErrorMessage);
-                }
-
-                throw new InvalidCommandException(errorBuilder.ToString(), null);
+                throw new InvalidCommandException(errors.Select(x => x.ErrorMessage).ToList());
             }
 
             return _decorated.Handle(command, cancellationToken);

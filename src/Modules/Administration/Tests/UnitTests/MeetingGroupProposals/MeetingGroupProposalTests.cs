@@ -18,12 +18,17 @@ namespace CompanyName.MyMeetings.Modules.Administration.Domain.UnitTests.Meeting
             var location = MeetingGroupLocation.Create("Warsaw", "Poland");
             var proposalUserId = new UserId(Guid.NewGuid());
             var proposalDate = DateTime.Now;
-            
-            var meetingGroupProposal = MeetingGroupProposal.CreateToVerify(meetingGroupProposalId,
-                "meetingName", "meetingDescription", location, proposalUserId, proposalDate);
+
+            var meetingGroupProposal = MeetingGroupProposal.CreateToVerify(
+                meetingGroupProposalId,
+                "meetingName",
+                "meetingDescription",
+                location,
+                proposalUserId,
+                proposalDate);
 
             var meetingGroupProposalVerificationRequested = AssertPublishedDomainEvent<MeetingGroupProposalVerificationRequestedDomainEvent>(meetingGroupProposal);
-            Assert.That(meetingGroupProposalVerificationRequested.Id, Is.EqualTo(new MeetingGroupProposalId(meetingGroupProposalId)));
+            Assert.That(meetingGroupProposalVerificationRequested.MeetingGroupProposalId, Is.EqualTo(new MeetingGroupProposalId(meetingGroupProposalId)));
         }
 
         [Test]
@@ -32,9 +37,14 @@ namespace CompanyName.MyMeetings.Modules.Administration.Domain.UnitTests.Meeting
             var meetingGroupProposalId = Guid.NewGuid();
             var location = MeetingGroupLocation.Create("Warsaw", "Poland");
             var proposalUserId = new UserId(Guid.NewGuid());
-            var proposalDate = DateTime.Now;          
-            var meetingGroupProposal = MeetingGroupProposal.CreateToVerify(meetingGroupProposalId,
-                "meetingName", "meetingDescription", location, proposalUserId, proposalDate);
+            var proposalDate = DateTime.Now;
+            var meetingGroupProposal = MeetingGroupProposal.CreateToVerify(
+                meetingGroupProposalId,
+                "meetingName",
+                "meetingDescription",
+                location,
+                proposalUserId,
+                proposalDate);
 
             meetingGroupProposal.Accept(new UserId(Guid.NewGuid()));
 
@@ -50,9 +60,14 @@ namespace CompanyName.MyMeetings.Modules.Administration.Domain.UnitTests.Meeting
             var location = MeetingGroupLocation.Create("Warsaw", "Poland");
             var userId = new UserId(Guid.NewGuid());
             var proposalUserId = userId;
-            var proposalDate = DateTime.Now;          
-            var meetingGroupProposal = MeetingGroupProposal.CreateToVerify(meetingGroupProposalId,
-                "meetingName", "meetingDescription", location, proposalUserId, proposalDate);
+            var proposalDate = DateTime.Now;
+            var meetingGroupProposal = MeetingGroupProposal.CreateToVerify(
+                meetingGroupProposalId,
+                "meetingName",
+                "meetingDescription",
+                location,
+                proposalUserId,
+                proposalDate);
 
             meetingGroupProposal.Accept(userId);
 
@@ -69,9 +84,14 @@ namespace CompanyName.MyMeetings.Modules.Administration.Domain.UnitTests.Meeting
             var location = MeetingGroupLocation.Create("Warsaw", "Poland");
             var userId = new UserId(Guid.NewGuid());
             var proposalUserId = userId;
-            var proposalDate = DateTime.Now;          
-            var meetingGroupProposal = MeetingGroupProposal.CreateToVerify(meetingGroupProposalId,
-                "meetingName", "meetingDescription", location, proposalUserId, proposalDate);
+            var proposalDate = DateTime.Now;
+            var meetingGroupProposal = MeetingGroupProposal.CreateToVerify(
+                meetingGroupProposalId,
+                "meetingName",
+                "meetingDescription",
+                location,
+                proposalUserId,
+                proposalDate);
 
             meetingGroupProposal.Accept(userId);
 
@@ -88,9 +108,14 @@ namespace CompanyName.MyMeetings.Modules.Administration.Domain.UnitTests.Meeting
             var location = MeetingGroupLocation.Create("Warsaw", "Poland");
             var userId = new UserId(Guid.NewGuid());
             var proposalUserId = userId;
-            var proposalDate = DateTime.Now;          
-            var meetingGroupProposal = MeetingGroupProposal.CreateToVerify(meetingGroupProposalId,
-                "meetingName", "meetingDescription", location, proposalUserId, proposalDate);
+            var proposalDate = DateTime.Now;
+            var meetingGroupProposal = MeetingGroupProposal.CreateToVerify(
+                meetingGroupProposalId,
+                "meetingName",
+                "meetingDescription",
+                location,
+                proposalUserId,
+                proposalDate);
 
             AssertBrokenRule<MeetingGroupProposalRejectionMustHaveAReasonRule>(() =>
             {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using CompanyName.MyMeetings.Modules.Payments.Application.Configuration.Commands;
+using CompanyName.MyMeetings.Modules.Payments.Application.Configuration.Queries;
 using CompanyName.MyMeetings.Modules.Payments.Application.Contracts;
 using CompanyName.MyMeetings.Modules.Payments.ArchTests.SeedWork;
 using CompanyName.MyMeetings.Modules.Payments.Infrastructure.Configuration;
@@ -25,8 +26,8 @@ namespace CompanyName.MyMeetings.Modules.Payments.ArchTests.Application
                 .Or().ImplementInterface(typeof(ICommand))
                 .Or().ImplementInterface(typeof(ICommand<>))
                 .GetTypes();
-            
-            AssertAreImmutable(types);         
+
+            AssertAreImmutable(types);
         }
 
         [Test]
@@ -34,8 +35,8 @@ namespace CompanyName.MyMeetings.Modules.Payments.ArchTests.Application
         {
             var types = Types.InAssembly(ApplicationAssembly)
                 .That().ImplementInterface(typeof(IQuery<>)).GetTypes();
-            
-            AssertAreImmutable(types);          
+
+            AssertAreImmutable(types);
         }
 
         [Test]
@@ -49,7 +50,7 @@ namespace CompanyName.MyMeetings.Modules.Payments.ArchTests.Application
                 .HaveNameEndingWith("CommandHandler")
                 .GetResult();
 
-             AssertArchTestResult(result);        
+            AssertArchTestResult(result);
         }
 
         [Test]
@@ -62,20 +63,7 @@ namespace CompanyName.MyMeetings.Modules.Payments.ArchTests.Application
                 .HaveNameEndingWith("QueryHandler")
                 .GetResult();
 
-            AssertArchTestResult(result);        
-        }
-
-        [Test]
-        public void InternalCommands_Should_Not_Be_Public()
-        {
-            var result = Types.InAssembly(ApplicationAssembly)
-                .That()
-                .Inherit(typeof(InternalCommandBase))
-                .Should()
-                .NotBePublic()
-                .GetResult();
-
-            AssertArchTestResult(result); 
+            AssertArchTestResult(result);
         }
 
         [Test]
@@ -88,11 +76,11 @@ namespace CompanyName.MyMeetings.Modules.Payments.ArchTests.Application
                     .ImplementInterface(typeof(ICommandHandler<>))
                 .Should().NotBePublic().GetResult().FailingTypes;
 
-            AssertFailingTypes(types); 
+            AssertFailingTypes(types);
         }
 
         [Test]
-        public void InternalCommand_Should_Have_Internal_Constructor_With_JsonConstructorAttribute()
+        public void InternalCommand_Should_Have_JsonConstructorAttribute()
         {
             var types = Types.InAssembly(ApplicationAssembly)
                 .That().Inherit(typeof(InternalCommandBase)).GetTypes();
@@ -102,7 +90,7 @@ namespace CompanyName.MyMeetings.Modules.Payments.ArchTests.Application
             foreach (var type in types)
             {
                 bool hasJsonConstructorDefined = false;
-                var constructors = type.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance);
+                var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
                 foreach (var constructorInfo in constructors)
                 {
                     var jsonConstructorAttribute = constructorInfo.GetCustomAttributes(typeof(JsonConstructorAttribute), false);
@@ -116,10 +104,10 @@ namespace CompanyName.MyMeetings.Modules.Payments.ArchTests.Application
                 if (!hasJsonConstructorDefined)
                 {
                     failingTypes.Add(type);
-                }               
+                }
             }
 
-            AssertFailingTypes(failingTypes); 
+            AssertFailingTypes(failingTypes);
         }
 
         [Test]
@@ -144,8 +132,8 @@ namespace CompanyName.MyMeetings.Modules.Payments.ArchTests.Application
                     failingTypes.Add(type);
                 }
             }
-            
-            AssertFailingTypes(failingTypes);      
+
+            AssertFailingTypes(failingTypes);
         }
     }
 }

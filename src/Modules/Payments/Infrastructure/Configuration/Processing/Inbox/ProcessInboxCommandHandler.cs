@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CompanyName.MyMeetings.BuildingBlocks.Application.Data;
 using CompanyName.MyMeetings.BuildingBlocks.Infrastructure;
 using CompanyName.MyMeetings.Modules.Payments.Application.Configuration.Commands;
 using Dapper;
@@ -24,12 +25,13 @@ namespace CompanyName.MyMeetings.Modules.Payments.Infrastructure.Configuration.P
         public async Task<Unit> Handle(ProcessInboxCommand command, CancellationToken cancellationToken)
         {
             var connection = this._sqlConnectionFactory.GetOpenConnection();
-            const string sql = "SELECT " +
-                               "[InboxMessage].[Id], " +
-                               "[InboxMessage].[Type], " +
-                               "[InboxMessage].[Data] " +
+            string sql = "SELECT " +
+                               $"[InboxMessage].[Id] AS [{nameof(InboxMessageDto.Id)}], " +
+                               $"[InboxMessage].[Type] AS [{nameof(InboxMessageDto.Type)}], " +
+                               $"[InboxMessage].[Data] AS [{nameof(InboxMessageDto.Data)}] " +
                                "FROM [payments].[InboxMessages] AS [InboxMessage] " +
-                               "WHERE [InboxMessage].[ProcessedDate] IS NULL";
+                               "WHERE [InboxMessage].[ProcessedDate] IS NULL " +
+                               "ORDER BY [InboxMessage].[OccurredOn]";
 
             var messages = await connection.QueryAsync<InboxMessageDto>(sql);
 
@@ -55,7 +57,7 @@ namespace CompanyName.MyMeetings.Modules.Payments.Infrastructure.Configuration.P
                     throw;
                 }
 
-                await connection.ExecuteAsync(sqlUpdateProcessedDate, new
+                await connection.ExecuteScalarAsync(sqlUpdateProcessedDate, new
                 {
                     Date = DateTime.UtcNow,
                     message.Id

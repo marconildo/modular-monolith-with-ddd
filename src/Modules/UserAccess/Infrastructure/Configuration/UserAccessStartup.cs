@@ -1,6 +1,10 @@
-﻿using Autofac;
+﻿using System;
+using Autofac;
 using CompanyName.MyMeetings.BuildingBlocks.Application;
+using CompanyName.MyMeetings.BuildingBlocks.Application.Emails;
+using CompanyName.MyMeetings.BuildingBlocks.Infrastructure;
 using CompanyName.MyMeetings.BuildingBlocks.Infrastructure.Emails;
+using CompanyName.MyMeetings.Modules.UserAccess.Application.UserRegistrations.RegisterNewUser;
 using CompanyName.MyMeetings.Modules.UserAccess.Infrastructure.Configuration.DataAccess;
 using CompanyName.MyMeetings.Modules.UserAccess.Infrastructure.Configuration.Domain;
 using CompanyName.MyMeetings.Modules.UserAccess.Infrastructure.Configuration.Email;
@@ -20,46 +24,55 @@ namespace CompanyName.MyMeetings.Modules.UserAccess.Infrastructure.Configuration
     {
         private static IContainer _container;
 
-        public static void Initialize(string connectionString, 
+        public static void Initialize(
+            string connectionString,
             IExecutionContextAccessor executionContextAccessor,
             ILogger logger,
             EmailsConfiguration emailsConfiguration,
-            string textEncryptionKey)
+            string textEncryptionKey,
+            IEmailSender emailSender)
         {
             var moduleLogger = logger.ForContext("Module", "UserAccess");
 
-            ConfigureCompositionRoot(connectionString,
+            ConfigureCompositionRoot(
+                connectionString,
                 executionContextAccessor,
                 logger,
                 emailsConfiguration,
-                textEncryptionKey);
-            
+                textEncryptionKey,
+                emailSender);
+
             QuartzStartup.Initialize(moduleLogger);
 
             EventsBusStartup.Initialize(moduleLogger);
         }
 
         private static void ConfigureCompositionRoot(
-            string connectionString, 
-            IExecutionContextAccessor executionContextAccessor, 
+            string connectionString,
+            IExecutionContextAccessor executionContextAccessor,
             ILogger logger,
             EmailsConfiguration emailsConfiguration,
-            string textEncryptionKey)
+            string textEncryptionKey,
+            IEmailSender emailSender)
         {
             var containerBuilder = new ContainerBuilder();
-          
+
             containerBuilder.RegisterModule(new LoggingModule(logger.ForContext("Module", "UserAccess")));
-            
+
             var loggerFactory = new SerilogLoggerFactory(logger);
             containerBuilder.RegisterModule(new DataAccessModule(connectionString, loggerFactory));
             containerBuilder.RegisterModule(new DomainModule());
             containerBuilder.RegisterModule(new ProcessingModule());
             containerBuilder.RegisterModule(new EventsBusModule());
             containerBuilder.RegisterModule(new MediatorModule());
-            containerBuilder.RegisterModule(new OutboxModule());
-            containerBuilder.RegisterModule(new QuartzModule()); 
-            containerBuilder.RegisterModule(new EmailModule(emailsConfiguration)); 
-            containerBuilder.RegisterModule(new SecurityModule(textEncryptionKey)); 
+
+            var domainNotificationsMap = new BiDictionary<string, Type>();
+            domainNotificationsMap.Add("NewUserRegisteredNotification", typeof(NewUserRegisteredNotification));
+            containerBuilder.RegisterModule(new OutboxModule(domainNotificationsMap));
+
+            containerBuilder.RegisterModule(new QuartzModule());
+            containerBuilder.RegisterModule(new EmailModule(emailsConfiguration, emailSender));
+            containerBuilder.RegisterModule(new SecurityModule(textEncryptionKey));
 
             containerBuilder.RegisterInstance(executionContextAccessor);
 

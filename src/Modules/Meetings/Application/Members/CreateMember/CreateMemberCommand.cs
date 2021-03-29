@@ -4,16 +4,18 @@ using Newtonsoft.Json;
 
 namespace CompanyName.MyMeetings.Modules.Meetings.Application.Members.CreateMember
 {
-    internal class CreateMemberCommand : InternalCommandBase
+    public class CreateMemberCommand : InternalCommandBase
     {
         [JsonConstructor]
-        internal CreateMemberCommand(Guid id,
+        public CreateMemberCommand(
+            Guid id,
             Guid memberId,
             string login,
             string email,
             string firstName,
             string lastName,
-            string name) : base(id)
+            string name)
+            : base(id)
         {
             Login = login;
             MemberId = memberId;
@@ -22,7 +24,9 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Application.Members.CreateMemb
             LastName = lastName;
             Name = name;
         }
+
         internal Guid MemberId { get; }
+
         internal string Login { get; }
 
         internal string Email { get; }

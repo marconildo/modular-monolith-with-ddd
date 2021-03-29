@@ -1,28 +1,34 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using CompanyName.MyMeetings.Modules.Payments.Application.Configuration.Commands;
 using CompanyName.MyMeetings.Modules.Payments.Domain.Payers;
-using MediatR;
+using CompanyName.MyMeetings.Modules.Payments.Domain.SeedWork;
 
 namespace CompanyName.MyMeetings.Modules.Payments.Application.Payers.CreatePayer
 {
-    internal class CreatePayerCommandHandler : ICommandHandler<CreatePayerCommand>
+    internal class CreatePayerCommandHandler : ICommandHandler<CreatePayerCommand, Guid>
     {
-        private readonly IPayerRepository _payerRepository;
+        private readonly IAggregateStore _aggregateStore;
 
-        public CreatePayerCommandHandler(IPayerRepository payerRepository)
+        public CreatePayerCommandHandler(IAggregateStore aggregateStore)
         {
-            _payerRepository = payerRepository;
+            _aggregateStore = aggregateStore;
         }
 
-        public async Task<Unit> Handle(CreatePayerCommand request, CancellationToken cancellationToken)
+        public Task<Guid> Handle(CreatePayerCommand request, CancellationToken cancellationToken)
         {
-            var payer = Payer.Create(request.UserId, request.Login, request.Email, request.FirstName, request.LastName,
+            var payer = Payer.Create(
+                request.UserId,
+                request.Login,
+                request.Email,
+                request.FirstName,
+                request.LastName,
                 request.Name);
 
-            await _payerRepository.AddAsync(payer);
+            _aggregateStore.AppendChanges(payer);
 
-            return Unit.Value;
+            return Task.FromResult(payer.Id);
         }
     }
 }

@@ -2,7 +2,13 @@
 
 Full Modular Monolith .NET application with Domain-Driven Design approach.
 
-[![Build Status](https://dev.azure.com/kgr0189/kgr/_apis/build/status/kgrzybek.modular-monolith-with-ddd?branchName=master)](https://dev.azure.com/kgr0189/kgr/_build/latest?definitionId=1&branchName=master)
+## CI
+
+![](https://github.com/kgrzybek/modular-monolith-with-ddd/workflows/Build%20Pipeline/badge.svg)
+
+## FrontEnd application
+
+FrontEnd application : [Modular Monolith With DDD: FrontEnd React application](https://github.com/kgrzybek/modular-monolith-with-ddd-fe-react) 
 
 ## Table of contents
 
@@ -30,6 +36,8 @@ Full Modular Monolith .NET application with Domain-Driven Design approach.
 
 [3. Architecture](#3-Architecture)
 
+&nbsp;&nbsp;[3.0 C4 Model](#30-c4-model)
+
 &nbsp;&nbsp;[3.1 High Level View](#31-high-level-view)
 
 &nbsp;&nbsp;[3.2 Module Level View](#32-module-level-view)
@@ -53,6 +61,18 @@ Full Modular Monolith .NET application with Domain-Driven Design approach.
 &nbsp;&nbsp;[3.11 Architecture Decision Log](#311-architecture-decision-log)
 
 &nbsp;&nbsp;[3.12 Architecture Unit Tests](#312-architecture-unit-tests)
+
+&nbsp;&nbsp;[3.13 Integration Tests](#313-integration-tests)
+
+&nbsp;&nbsp;[3.14 System Integration Testing](#314-system-integration-testing)
+
+&nbsp;&nbsp;[3.15 Event Sourcing](#315-event-sourcing)
+
+&nbsp;&nbsp;[3.16 Database change management](#316-database-change-management)
+
+&nbsp;&nbsp;[3.17 Continuous Integration](#317-continuous-integration)
+
+&nbsp;&nbsp;[3.18 Static code analysis](#318-static-code-analysis)
 
 [4. Technology](#4-technology)
 
@@ -84,6 +104,10 @@ This is a list of the main goals of this repository:
 - Presentation of some **architectural** considerations, decisions, approaches
 - Presentation of the implementation using **Domain-Driven Design** approach (**tactical** patterns)
 - Presentation of the implementation of **Unit Tests** for Domain Model (Testable Design in mind)
+- Presentation of the implementation of **Integration Tests**
+- Presentation of the implementation of **Event Sourcing**
+- Presentation of **C4 Model**
+- Presentation of **diagram as text** approach
 
 ### 1.2 Out of Scope
 
@@ -98,7 +122,7 @@ This is a list of subjects which are out of scope for this repository:
 - Project management
 - Infrastructure
 - Containerization
-- Software engineering process, CI/CD
+- Software engineering process
 - Deployment process
 - Maintenance
 - Documentation
@@ -169,15 +193,19 @@ A `Meeting Attendee` can bring guests to the `Meeting`. The number of guests all
 
 A `Meeting Attendee` can have one of two roles: `Attendee` or `Host`. A `Meeting` must have at least one `Host`. The `Host` is a special role which grants permission to edit `Meeting` information or change the attendees list.
 
+Each `Meeting Group` must have an organizer with active `Subscription`. One organizer can cover 3 `Meeting Groups` by his `Subscription`.
+
+Additionally, Meeting organizer can set an `Event Fee`. Each `Meeting Attendee` is obliged to pay the fee. All guests should be paid by `Meeting Attendee` too.
+
 **Administration**
 
 To create a new `Meeting Group`, a `Member` needs to propose the group. A `Meeting Group Proposal` is sent to `Administrators`. An `Administrator` can accept or reject a `Meeting Group Proposal`. If a `Meeting Group Proposal` is accepted, a `Meeting Group` is created.
 
 **Payments**
 
-To be able to organize `Meetings`, the `Meeting Group` must be paid for. The `Meeting Group` `Organizer` who is the `Payer`, must pay some fee according to a payment plan.
+Each `Member` who is the `Payer` can buy the `Subscription`. He needs to pay the `Subscription Payment`. `Subscription` can expire so `Subscription Renewal` is required (by `Subscription Renewal Payment` payment to keep `Subscription` active).
 
-Additionally, Meeting organizer can set an `Event Fee`. Each `Meeting Attendee` is obliged to pay the fee. All guests should be paid by `Meeting Attendee` too.
+When the `Meeting` fee is required, the `Payer` needs to pay `Meeting Fee` (through `Meeting Fee Payment`).
 
 **Users**
 
@@ -196,6 +224,10 @@ Each `User Role` has set of `Permissions`. A `Permission` defines whether `User`
 
 **Conceptual Model**
 
+PlantUML version:
+![](https://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/kgrzybek/modular-monolith-with-ddd/master/docs/PlantUML/Conceptual_Model.puml)
+
+VisualParadigm version (not maintained, only for demonstration):
 ![](docs/Images/Conceptual_Model.png)
 
 ### 2.3 Event Storming
@@ -224,7 +256,44 @@ Note: Event Storming is a light, live workshop. One of the possible outputs of t
 
 ------
 
+**Payments**
+![](docs/Images/Payments_EventStorming_Design.jpg)
+[Download high resolution file](docs/Images/Payments_EventStorming_Design_HighRes.jpg)
+
+------
+
+
 ## 3. Architecture
+
+### 3.0 C4 Model
+
+[C4 model](https://c4model.com/) is a lean graphical notation technique for modelling the architecture of software systems. <br>
+
+As can be found on the website of the author of this model ([Simon Brown](https://simonbrown.je/)): *The C4 model was created as a way to help software development teams describe and communicate software architecture, both during up-front design sessions and when retrospectively documenting an existing codebase* <br>
+
+*Model C4* defines 4 levels (views) of the system architecture: *System Context*, *Container*, *Component* and *Code*. Below are examples of each of these levels that describe the architecture of this system. <br>
+
+*Note: The [PlantUML](https://plantuml.com/) (diagram as text) component was used to describe all C4 model levels. Additionally, for levels C1-C3, a [C4-PlantUML](https://github.com/plantuml-stdlib/C4-PlantUML) plug-in connecting PlantUML with the C4 model was used*.
+
+#### 3.0.1 C1 System Context
+
+![](https://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/kgrzybek/modular-monolith-with-ddd/master/docs/C4/c1_system_context.puml)
+
+#### 3.0.2 C2 Container
+
+![](https://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/kgrzybek/modular-monolith-with-ddd/master/docs/C4/c2_container.puml)
+
+#### 3.0.3 C3 Component (high-level)
+
+![](https://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/kgrzybek/modular-monolith-with-ddd/master/docs/C4/c3_components.puml)
+
+#### 3.0.4 C3 Component (module-level)
+
+![](https://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/kgrzybek/modular-monolith-with-ddd/master/docs/C4/c3_components_module.puml)
+
+#### 3.0.5 C4 Code (meeting group aggregate)
+
+![](https://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/kgrzybek/modular-monolith-with-ddd/master/docs/C4/c4_class.puml)
 
 ### 3.1 High Level View
 
@@ -796,7 +865,10 @@ public async Task<IActionResult> ProposeMeetingGroup(ProposeMeetingGroupRequest 
 
 **Implementation**
 
-Each unit test has 3 standard sections: Arrange, Act and Assert
+Unit tests should mainly test business logic (domain model): </br>
+![](docs/Images/unit_tests.jpg)
+
+Each unit test has 3 standard sections: Arrange, Act and Assert:
 
 ![](docs/Images/UnitTestsGeneral.jpg)
 
@@ -955,14 +1027,749 @@ Using this kind of tests we can test proper layering of our application, depende
 
 More information about architecture unit tests here: [https://blogs.oracle.com/javamagazine/unit-test-your-architecture-with-archunit](https://blogs.oracle.com/javamagazine/unit-test-your-architecture-with-archunit)
 
+### 3.13 Integration Tests
+
+#### Definition
+
+"Integration Test" term is blurred. It can mean test between classes, modules, services, even systems - see [this](https://martinfowler.com/bliki/IntegrationTest.html) article (by Martin Fowler). </br>
+
+For this reason, the definition of integration test in this project is as follows:</br>
+- it verifies how system works in integration with "out-of-process" dependencies - database, messaging system, file system or external API
+- it tests particular use case
+- it can be slow (as opposed to Unit Test)
+
+#### Approach
+
+- **Do not mock dependencies over which you have full control** (like database). Full control dependency means you can always revert all changes (remove side-effects) and no one can notice it. They are not visible to others. See next point, please.
+- **Use "production", normal, real database version**. Some use e.g. in memory repository, some use light databases instead "production" version. This is still mocking. Testing makes sense if we have full confidence in testing. You can't trust the test if you know that the infrastructure in the production environment will vary. Be always as close to production environment as possible.
+- **Mock dependencies over which you don't have control**. No control dependency means you can't remove side-effects after interaction with this dependency (external API, messaging system, SMTP server etc.). They can be visible to others.
+
+#### Implementation
+
+Integration test should test exactly one use case. One use case is represented by one Command/Query processing so CommandHandler/QueryHandler in Application layer is perfect starting point for running the Integration Test:</br>
+
+![](docs/Images/integration_tests.jpg)
+For each test, the following preparation steps must be performed:</br>
+
+1. Clear database
+2. Prepare mocks
+3. Initialize testing module
+
+```csharp
+[SetUp]
+public async Task BeforeEachTest()
+{
+    const string connectionStringEnvironmentVariable =
+        "ASPNETCORE_MyMeetings_IntegrationTests_ConnectionString";
+    ConnectionString = Environment.GetEnvironmentVariable(connectionStringEnvironmentVariable, EnvironmentVariableTarget.Machine);
+    if (ConnectionString == null)
+    {
+        throw new ApplicationException(
+            $"Define connection string to integration tests database using environment variable: {connectionStringEnvironmentVariable}");
+    }
+
+    using (var sqlConnection = new SqlConnection(ConnectionString))
+    {
+        await ClearDatabase(sqlConnection);
+    }
+
+    Logger = Substitute.For<ILogger>();
+    EmailSender = Substitute.For<IEmailSender>();
+    EventsBus = new EventsBusMock();
+    ExecutionContext = new ExecutionContextMock(Guid.NewGuid());
+    
+    PaymentsStartup.Initialize(
+        ConnectionString,
+        ExecutionContext,
+        Logger,
+        EventsBus,
+        false);
+
+    PaymentsModule = new PaymentsModule();
+}
+```
+After preparation, test is performed on clear database. Usually, it is the execution of some (or many) Commands and: </br>
+a) running a Query or/and  </br>
+b) verifying mocks </br>
+to check the result.
+
+```csharp
+[TestFixture]
+public class MeetingPaymentTests : TestBase
+{
+    [Test]
+    public async Task CreateMeetingPayment_Test()
+    {
+        PayerId payerId = new PayerId(Guid.NewGuid());
+        MeetingId meetingId = new MeetingId(Guid.NewGuid());
+        decimal value = 100;
+        string currency = "EUR";
+        await PaymentsModule.ExecuteCommandAsync(new CreateMeetingPaymentCommand(Guid.NewGuid(),
+            payerId, meetingId, value, currency));
+
+        var payment = await PaymentsModule.ExecuteQueryAsync(new GetMeetingPaymentQuery(meetingId.Value, payerId.Value));
+
+        Assert.That(payment.PayerId, Is.EqualTo(payerId.Value));
+        Assert.That(payment.MeetingId, Is.EqualTo(meetingId.Value));
+        Assert.That(payment.FeeValue, Is.EqualTo(value));
+        Assert.That(payment.FeeCurrency, Is.EqualTo(currency));
+    }
+}
+```
+
+Each Command/Query processing is a separate execution (with different object graph resolution, context, database connection etc.) thanks to Composition Root of each module. This behavior is important and desirable.
+
+### 3.14 System Integration Testing
+
+#### Definition
+[System Integration Testing (SIT)](https://en.wikipedia.org/wiki/System_integration_testing) is performed to verify the interactions between the modules of a software system. It involves the overall testing of a complete system of many subsystem components or elements.
+
+#### Implementation
+
+Implementation of system integration tests is based on approach of integration testing of modules in isolation (invoking commands and queries) described in the previous section.
+
+The problem is that in this case we are dealing with **asynchronous communication**. Due to asynchrony, our **test must wait for the result** at certain times. 
+
+To correctly implement such tests, the **Sampling** technique and implementation described in the [Growing Object-Oriented Software, Guided by Tests](https://www.amazon.com/Growing-Object-Oriented-Software-Guided-Tests/dp/0321503627) book was used:
+
+>An asynchronous test must wait for success and use timeouts to detect failure. This implies that every tested activity must have an observable effect: a test must affect the system so that its observable state becomes different. This sounds obvious but it drives how we think about writing asynchronous tests. If an activity has no observable effect, there is nothing the test can wait for, and therefore no way for the test to synchronize with the system it is testing. There are two ways a test can observe the system: by sampling its observable state or by listening for events that it sends out.
+
+![](docs/Images/SystemIntegrationTests.jpg)
+
+Test below:
+1. Creates Meeting Group Proposal in Meetings module
+2. Waits until Meeting Group Proposal to verification will be available in Administration module with 10 seconds timeout
+3. Accepts Meeting Group Proposal in Administration module
+4. Waits until Meeting Group is created in Meetings module with 15 seconds timeout
+
+```csharp
+public class CreateMeetingGroupTests : TestBase
+{
+    [Test]
+    public async Task CreateMeetingGroupScenario_WhenProposalIsAccepted()
+    {
+        var meetingGroupId = await MeetingsModule.ExecuteCommandAsync(
+            new ProposeMeetingGroupCommand("Name",
+            "Description",
+            "Location",
+            "PL"));
+
+        AssertEventually(
+            new GetMeetingGroupProposalFromAdministrationProbe(meetingGroupId, AdministrationModule), 
+            10000);
+
+        await AdministrationModule.ExecuteCommandAsync(new AcceptMeetingGroupProposalCommand(meetingGroupId));
+
+        AssertEventually(
+            new GetCreatedMeetingGroupFromMeetingsProbe(meetingGroupId, MeetingsModule),
+            15000);
+    }
+
+    private class GetCreatedMeetingGroupFromMeetingsProbe : IProbe
+    {
+        private readonly Guid _expectedMeetingGroupId;
+
+        private readonly IMeetingsModule _meetingsModule;
+
+        private List<MeetingGroupDto> _allMeetingGroups;
+
+        public GetCreatedMeetingGroupFromMeetingsProbe(
+            Guid expectedMeetingGroupId, 
+            IMeetingsModule meetingsModule)
+        {
+            _expectedMeetingGroupId = expectedMeetingGroupId;
+            _meetingsModule = meetingsModule;
+        }
+
+        public bool IsSatisfied()
+        {
+            return _allMeetingGroups != null && 
+                   _allMeetingGroups.Any(x => x.Id == _expectedMeetingGroupId);
+        }
+
+        public async Task SampleAsync()
+        {
+            _allMeetingGroups = await _meetingsModule.ExecuteQueryAsync(new GetAllMeetingGroupsQuery());
+        }
+
+        public string DescribeFailureTo() 
+            => $"Meeting group with ID: {_expectedMeetingGroupId} is not created";
+    }
+
+    private class GetMeetingGroupProposalFromAdministrationProbe : IProbe
+    {
+        private readonly Guid _expectedMeetingGroupProposalId;
+
+        private MeetingGroupProposalDto _meetingGroupProposal;
+
+        private readonly IAdministrationModule _administrationModule;
+
+        public GetMeetingGroupProposalFromAdministrationProbe(Guid expectedMeetingGroupProposalId, IAdministrationModule administrationModule)
+        {
+            _expectedMeetingGroupProposalId = expectedMeetingGroupProposalId;
+            _administrationModule = administrationModule;
+        }
+
+        public bool IsSatisfied()
+        {
+            if (_meetingGroupProposal == null)
+            {
+                return false;
+            }
+
+            if (_meetingGroupProposal.Id == _expectedMeetingGroupProposalId &&
+                _meetingGroupProposal.StatusCode == MeetingGroupProposalStatus.ToVerify.Value)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public async Task SampleAsync()
+        {
+            try
+            {
+                _meetingGroupProposal =
+                    await _administrationModule.ExecuteQueryAsync(
+                        new GetMeetingGroupProposalQuery(_expectedMeetingGroupProposalId));
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+
+        public string DescribeFailureTo()
+            => $"Meeting group proposal with ID: {_expectedMeetingGroupProposalId} to verification not created";
+    }
+}
+```
+
+Poller class implementation (based on example in the book):
+
+```csharp
+public class Poller
+{
+    private readonly int _timeoutMillis;
+
+    private readonly int _pollDelayMillis;
+
+    public Poller(int timeoutMillis)
+    {
+        _timeoutMillis = timeoutMillis;
+        _pollDelayMillis = 1000;
+    }
+
+    public void Check(IProbe probe)
+    {
+        var timeout = new Timeout(_timeoutMillis);
+        while (!probe.IsSatisfied())
+        {
+            if (timeout.HasTimedOut())
+            {
+                throw new AssertErrorException(DescribeFailureOf(probe));
+            }
+
+            Thread.Sleep(_pollDelayMillis);
+            probe.SampleAsync();
+        }
+    }
+
+    private static string DescribeFailureOf(IProbe probe)
+    {
+        return probe.DescribeFailureTo();
+    }
+}
+```
+
+### 3.15 Event Sourcing
+
+#### Theory
+
+During the implementation of the Payment module, *Event Sourcing* was used. *Event Sourcing* is a way of preserving the state of our system by recording a sequence of events. No less, no more. 
+
+It is important here to really restore the state of our application from events. If we collect events only for auditing purposes, it is an [Audit Log/Trail](https://en.wikipedia.org/wiki/Audit_trail) - not the *Event Sourcing*.
+
+The main elements of *Event Sourcing* are as follows:
+- Events Stream
+- Objects that are restored based on events. There are 2 types of such objects depending on the purpose:
+-- Objects responsible for the change of state. In Domain-Driven Design they will be *Aggregates*.
+-- *Projections*: read models prepared for a specific purpose
+- *Subscriptions* : a way to receive information about new events
+- *Snapshots*: from time to time, objects saved in the traditional way for performance purposes. Mainly used if there are many events to restore the object from the entire event history. (Note: there is currently no snapshot implementation in the project)
+
+![](docs/Images/ES_elements.jpg)
+
+#### Tool
+
+In order not to reinvent the wheel, the *SQL Stream Store* library was used. As the [documentation](https://sqlstreamstore.readthedocs.io/en/latest/) says:
+
+*SQL Stream Store is a .NET library to assist with developing applications that use event sourcing or wish to use stream based patterns over a relational database and existing operational infrastructure.*
+
+Like every library, it has its limitations and assumptions (I recommend the linked documentation chapter "Things you need to know before adopting"). For me, the most important 2 points from this chapter are:
+1. *"Subscriptions (and thus projections) are **eventually consistent** and always will be."* This means that there will always be an inconsistency time from saving the event to the stream and processing the event by the projector(s).
+2. *"No support for ambient System.Transaction scopes enforcing the concept of the stream as the consistency and transactional boundary."* This means that if we save the event to a events stream and want to save something **in the same transaction**, we must use [TransactionScope](https://docs.microsoft.com/en-us/dotnet/api/system.transactions.transactionscope?view=netcore-3.1). If we cannot use *TransactionScope* for some reason, we must accept the Eventual Consistency also in this case.
+
+Other popular tools:
+
+- [EventStore](https://eventstore.com/) *"An industrial-strength database solution built from the ground up for event sourcing."*
+- [Marten](https://martendb.io/) *".NET Transactional Document DB and Event Store on PostgreSQL"*
+
+#### Implementation
+
+There are 2 main "flows" to handle:
+- Command handling: change of state - adding new events to stream (writing)
+- Projection of events to create read models
+
+##### Command Handling
+
+The whole process looks like this:
+
+![](docs/Images/ES_command_handling.png)
+
+1. We create / update an aggregate by creating an event
+2. We add changes to the Aggregate Store. This is the class responsible for writing / loading our aggregates. We are not saving changes yet.
+3. As part of Unit Of Work  a) Aggregate Store adds events to the stream b) messages are added to the Outbox
+
+
+Command Handler:
+
+```csharp
+public class BuySubscriptionCommandHandler : ICommandHandler<BuySubscriptionCommand, Guid>
+{
+    private readonly IAggregateStore _aggregateStore;
+
+    private readonly IPayerContext _payerContext;
+
+    private readonly ISqlConnectionFactory _sqlConnectionFactory;
+
+    public BuySubscriptionCommandHandler(
+        IAggregateStore aggregateStore, 
+        IPayerContext payerContext, 
+        ISqlConnectionFactory sqlConnectionFactory)
+    {
+        _aggregateStore = aggregateStore;
+        _payerContext = payerContext;
+        _sqlConnectionFactory = sqlConnectionFactory;
+    }
+
+    public async Task<Guid> Handle(BuySubscriptionCommand command, CancellationToken cancellationToken)
+    {
+        var priceList = await PriceListProvider.GetPriceList(_sqlConnectionFactory.GetOpenConnection());
+
+        var subscriptionPayment = SubscriptionPayment.Buy(
+            _payerContext.PayerId,
+            SubscriptionPeriod.Of(command.SubscriptionTypeCode),
+            command.CountryCode,
+            MoneyValue.Of(command.Value, command.Currency),
+            priceList);
+        
+        _aggregateStore.AppendChanges(subscriptionPayment);
+
+        return subscriptionPayment.Id;
+    }
+}
+```
+
+`SubscriptionPayment` Aggregate:
+
+```csharp
+public class SubscriptionPayment : AggregateRoot
+{
+    private PayerId _payerId;
+
+    private SubscriptionPeriod _subscriptionPeriod;
+
+    private string _countryCode;
+
+    private SubscriptionPaymentStatus _subscriptionPaymentStatus;
+
+    private MoneyValue _value;
+
+    protected override void Apply(IDomainEvent @event)
+    {
+        this.When((dynamic)@event);
+    }
+
+    public static SubscriptionPayment Buy(
+        PayerId payerId,
+        SubscriptionPeriod period,
+        string countryCode,
+        MoneyValue priceOffer,
+        PriceList priceList)
+    {
+        var priceInPriceList = priceList.GetPrice(countryCode, period, PriceListItemCategory.New);
+        CheckRule(new PriceOfferMustMatchPriceInPriceListRule(priceOffer, priceInPriceList));
+
+        var subscriptionPayment = new SubscriptionPayment();
+
+        var subscriptionPaymentCreated = new SubscriptionPaymentCreatedDomainEvent(
+            Guid.NewGuid(),
+            payerId.Value,
+            period.Code,
+            countryCode,
+            SubscriptionPaymentStatus.WaitingForPayment.Code,
+            priceOffer.Value,
+            priceOffer.Currency);
+
+        subscriptionPayment.Apply(subscriptionPaymentCreated);
+        subscriptionPayment.AddDomainEvent(subscriptionPaymentCreated);
+
+        return subscriptionPayment;
+    }
+
+    private void When(SubscriptionPaymentCreatedDomainEvent @event)
+    {
+        this.Id = @event.SubscriptionPaymentId;
+        _payerId = new PayerId(@event.PayerId);
+        _subscriptionPeriod = SubscriptionPeriod.Of(@event.SubscriptionPeriodCode);
+        _countryCode = @event.CountryCode;
+        _subscriptionPaymentStatus = SubscriptionPaymentStatus.Of(@event.Status);
+        _value = MoneyValue.Of(@event.Value, @event.Currency);
+    }
+```
+
+`AggregateRoot` base class:
+
+```csharp
+public abstract class AggregateRoot
+{
+    public Guid Id { get; protected set; }
+
+    public int Version { get; private set; }
+
+    private readonly List<IDomainEvent> _domainEvents;
+
+    protected AggregateRoot()
+    {
+        _domainEvents = new List<IDomainEvent>();
+
+        Version = -1;
+    }
+
+    protected void AddDomainEvent(IDomainEvent @event)
+    {
+        _domainEvents.Add(@event);
+    }
+
+    public IReadOnlyCollection<IDomainEvent> GetDomainEvents() => _domainEvents.AsReadOnly();
+
+    public void Load(IEnumerable<IDomainEvent> history)
+    {
+        foreach (var e in history)
+        {
+            Apply(e);
+            Version++;
+        }
+    }
+
+    protected abstract void Apply(IDomainEvent @event);
+
+    protected static void CheckRule(IBusinessRule rule)
+    {
+        if (rule.IsBroken())
+        {
+            throw new BusinessRuleValidationException(rule);
+        }
+    }
+}
+
+```
+Aggregate Store implementation with SQL Stream Store library usage:
+
+```csharp
+public class SqlStreamAggregateStore : IAggregateStore
+{
+    private readonly IStreamStore _streamStore;
+
+    private readonly List<IDomainEvent> _appendedChanges;
+
+    private readonly List<AggregateToSave> _aggregatesToSave;
+
+    public SqlStreamAggregateStore(
+        ISqlConnectionFactory sqlConnectionFactory)
+    {
+        _appendedChanges = new List<IDomainEvent>();
+
+        _streamStore =
+            new MsSqlStreamStore(
+                new MsSqlStreamStoreSettings(sqlConnectionFactory.GetConnectionString())
+                    {
+                        Schema = DatabaseSchema.Name
+                });
+
+        _aggregatesToSave = new List<AggregateToSave>();
+    }
+
+    public async Task Save()
+    {
+        foreach (var aggregateToSave in _aggregatesToSave)
+        {
+            await _streamStore.AppendToStream(
+                GetStreamId(aggregateToSave.Aggregate),
+                aggregateToSave.Aggregate.Version,
+                aggregateToSave.Messages.ToArray());
+        }
+
+        _aggregatesToSave.Clear();
+    }
+
+    public async Task<T> Load<T>(AggregateId<T> aggregateId) where T : AggregateRoot
+    {
+        var streamId = GetStreamId(aggregateId);
+
+        IList<IDomainEvent> domainEvents = new List<IDomainEvent>();
+        ReadStreamPage readStreamPage;
+        do
+        {
+            readStreamPage = await _streamStore.ReadStreamForwards(streamId, StreamVersion.Start, maxCount: 100);
+            var messages = readStreamPage.Messages;
+            foreach (var streamMessage in messages)
+            {
+                Type type = DomainEventTypeMappings.Dictionary[streamMessage.Type];
+                var jsonData = await streamMessage.GetJsonData();
+                var domainEvent = JsonConvert.DeserializeObject(jsonData, type) as IDomainEvent;
+
+                domainEvents.Add(domainEvent);
+            }
+        } while (!readStreamPage.IsEnd);
+
+        var aggregate = (T)Activator.CreateInstance(typeof(T), true);
+
+        aggregate.Load(domainEvents);
+
+        return aggregate;
+    }
+
+```
+
+##### Events Projection
+
+The whole process looks like this:
+
+![](docs/Images/ES_events_projection.png)
+
+1. Special class `Subscriptions Manager` subscribes to Events Store (using SQL Store Stream library)
+2. Events Store raises `StreamMessageRecievedEvent`
+3. `Subscriptions Manager` invokes all projectors
+4. If projector know how to handle given event, it updates particular read model. In current implementation it updates special table in SQL database.
+
+`SubscriptionsManager` class implementation:
+
+```csharp
+public class SubscriptionsManager
+{
+    private readonly IStreamStore _streamStore;
+
+    public SubscriptionsManager(
+        IStreamStore streamStore)
+    {
+        _streamStore = streamStore;
+    }
+
+    public void Start()
+    {
+        long? actualPosition;
+
+        using (var scope = PaymentsCompositionRoot.BeginLifetimeScope())
+        {
+            var checkpointStore = scope.Resolve<ICheckpointStore>();
+
+            actualPosition = checkpointStore.GetCheckpoint(SubscriptionCode.All);
+        }
+
+        _streamStore.SubscribeToAll(actualPosition, StreamMessageReceived);
+    }
+
+    public void Stop()
+    {
+        _streamStore.Dispose();
+    }
+
+    private static async Task StreamMessageReceived(
+        IAllStreamSubscription subscription, StreamMessage streamMessage, CancellationToken cancellationToken)
+    {
+        var type = DomainEventTypeMappings.Dictionary[streamMessage.Type];
+        var jsonData = await streamMessage.GetJsonData(cancellationToken);
+        var domainEvent = JsonConvert.DeserializeObject(jsonData, type) as IDomainEvent;
+
+        using var scope = PaymentsCompositionRoot.BeginLifetimeScope();
+
+        var projectors = scope.Resolve<IList<IProjector>>();
+
+        var tasks = projectors
+            .Select(async projector =>
+            {
+                await projector.Project(domainEvent);
+            });
+
+        await Task.WhenAll(tasks);
+
+        var checkpointStore = scope.Resolve<ICheckpointStore>();
+        await checkpointStore.StoreCheckpoint(SubscriptionCode.All, streamMessage.Position);
+    }
+}
+
+```
+
+Example projector:
+
+```csharp
+internal class SubscriptionDetailsProjector : ProjectorBase, IProjector
+{
+    private readonly IDbConnection _connection;
+
+    public SubscriptionDetailsProjector(ISqlConnectionFactory sqlConnectionFactory)
+    {
+        _connection = sqlConnectionFactory.GetOpenConnection();
+    }
+
+    public async Task Project(IDomainEvent @event)
+    {
+        await When((dynamic) @event);
+    }
+
+    private async Task When(SubscriptionRenewedDomainEvent subscriptionRenewed)
+    {
+        var period = SubscriptionPeriod.GetName(subscriptionRenewed.SubscriptionPeriodCode);
+        
+        await _connection.ExecuteScalarAsync("UPDATE payments.SubscriptionDetails " +
+                                                "SET " +
+                                                    "[Status] = @Status, " +
+                                                    "[ExpirationDate] = @ExpirationDate, " +
+                                                    "[Period] = @Period " +
+                                                "WHERE [Id] = @SubscriptionId",
+            new
+            {
+                subscriptionRenewed.SubscriptionId,
+                subscriptionRenewed.Status,
+                subscriptionRenewed.ExpirationDate,
+                period
+            });
+    }
+
+    private async Task When(SubscriptionExpiredDomainEvent subscriptionExpired)
+    {
+        await _connection.ExecuteScalarAsync("UPDATE payments.SubscriptionDetails " +
+                                             "SET " +
+                                             "[Status] = @Status " +
+                                             "WHERE [Id] = @SubscriptionId",
+            new
+            {
+                subscriptionExpired.SubscriptionId,
+                subscriptionExpired.Status
+            });
+    }
+
+    private async Task When(SubscriptionCreatedDomainEvent subscriptionCreated)
+    {
+        var period = SubscriptionPeriod.GetName(subscriptionCreated.SubscriptionPeriodCode);
+        
+        await _connection.ExecuteScalarAsync("INSERT INTO payments.SubscriptionDetails " +
+                                       "([Id], [Period], [Status], [CountryCode], [ExpirationDate]) " +
+                                       "VALUES (@SubscriptionId, @Period, @Status, @CountryCode, @ExpirationDate)",
+            new
+            {
+                subscriptionCreated.SubscriptionId,
+                period,
+                subscriptionCreated.Status,
+                subscriptionCreated.CountryCode,
+                subscriptionCreated.ExpirationDate
+            });
+    }
+}
+
+```
+#### Sample view of Event Store
+
+Sample *Event Store* view after execution of SubscriptionLifecycleTests Integration Test which includes following steps:
+1. Creating Price List
+2. Buying Subscription
+3. Renewing Subscription
+4. Expiring Subscription
+
+looks like this (*SQL Stream Store* table - *payments.Messages*):
+
+![](docs/Images/ES_event_store_db_sample.png)
+
+### 3.16 Database Change Management
+
+Database change management is accomplished by *migrations/transitions* versioning. Additionally, the current state of the database structure is also versioned.
+
+Migrations are applied using a simple [DatabaseMigrator](src/Database/DatabaseMigrator) console application that uses the [DbUp](https://dbup.readthedocs.io/en/latest/) library. The current state of the database structure is kept in the [SSDT Database Project](https://docs.microsoft.com/en-us/sql/ssdt/how-to-create-a-new-database-project).
+
+The database update is performed by running the following command:
+
+```shell
+dotnet DatabaseMigrator.dll "connection_string" "scripts_directory_path"
+```
+
+The entire solution is described in detail in the following articles:
+1. [Database change management](https://www.kamilgrzybek.com/database/database-change-management/) (theory)
+2. [Using database project and DbUp for database management](https://www.kamilgrzybek.com/database/using-database-project-and-dbup-for-database-management/) (implementation)
+
+### 3.17 Continuous Integration
+
+#### Definition
+
+As defined on [Martin Fowler's website](https://martinfowler.com/articles/continuousIntegration.html):
+> *Continuous Integration is a software development practice where members of a team integrate their work frequently, usually each person integrates at least daily - leading to multiple integrations per day. Each integration is verified by an automated build (including test) to detect integration errors as quickly as possible.*
+
+#### Implementation
+
+##### Pipeline description
+
+CI was implemented using [GitHub Actions](https://docs.github.com/en/actions/getting-started-with-github-actions/about-github-actions). For this purpose, one workflow, which triggers on Pull Request to *master* branch or Push to *master* branch was created. It contains 2 jobs: 
+- build test, execute Unit Tests and Architecture Tests
+- execute Integration Tests
+
+![](docs/Images/ci.jpg)
+
+**Steps description**<br/>
+a) Checkout repository - clean checkout of git repository <br/>
+b) Setup .NET Core - install .NET Core SDK<br/>
+c) Install dependencies - resolve NuGet packages<br/>
+d) Build - build solution<br/>
+e) Run Unit Tests - run automated Unit Tests (see section 3.10)<br/>
+f) Run Architecture Tests - run automated Architecture Tests (see section 3.12)<br/>
+g) Initialize containers - setup Docker container for MS SQL Server<br/>
+h) Wait for SQL Server initialization - after container initialization MS SQL Server is not ready, initialization of server itself takes some time so 30 seconds timeout before execution of next step is needed<br/>
+i) Create Database - create and initialize database<br/>
+j) Migrate Database - execute database upgrade using *DatabaseMigrator* application (see 3.16 section)<br/>
+k) Run Integration Tests - perform Integration and System Integration Testing (see section 3.13 and 3.14)<br/>
+
+##### Workflow definition
+
+Workflow definition: [buildPipeline.yml](.github/workflows/buildPipeline.yml)
+
+##### Example workflow execution
+
+Example workflow output:
+
+![](docs/Images/ci_job1.png)
+
+![](docs/Images/ci_job2.png)
+
+### 3.18 Static code analysis
+
+In order to standardize the appearance of the code and increase its readability, the [StyleCopAnalyzers](https://github.com/DotNetAnalyzers/StyleCopAnalyzers) library was used. This library implements StyleCop rules using the .NET Compiler Platform and is responsible for the static code analysis.<br/>
+
+Using this library is trivial - it is just added as a NuGet package to all projects. There are many ways to configure rules, but currently the best way to do this is to edit the [.editorconfig](src/.editorconfig) file. More information can be found at the link above.<br/>
+
+**Note! Static code analysis works best when the following points are met:**<br/>
+
+1. Each developer has an IDE that respects the rules and helps to follow them
+2. The rules are checked during the project build process as part of Continuous Integration
+3. The rules are set to *help your system grow*. **Static analysis is not a value in itself.** Some rules may not make complete sense and should be turned off. Other rules may have higher priority. It all depends on the project, company standards and people involved in the project. Be pragmatic.
 
 ## 4. Technology
 
 List of technologies, frameworks and libraries used for implementation:
 
-- [.NET Core 2.2](https://dotnet.microsoft.com/download) (platform)
+- [.NET Core 3.1](https://dotnet.microsoft.com/download) (platform). Note for Visual Studio users: **VS 2019** is required.
 - [MS SQL Server Express](https://www.microsoft.com/en-us/sql-server/sql-server-editions-express) (database)
-- [Entity Framework Core 2.2](https://docs.microsoft.com/en-us/ef/core/) (ORM Write Model implementation for DDD)
+- [Entity Framework Core 3.1](https://docs.microsoft.com/en-us/ef/core/) (ORM Write Model implementation for DDD)
 - [Autofac](https://autofac.org/) (Inversion of Control Container)
 - [IdentityServer4](http://docs.identityserver.io) (Authentication and Authorization)
 - [Serilog](https://serilog.net/) (structured logging)
@@ -978,33 +1785,64 @@ List of technologies, frameworks and libraries used for implementation:
 - [NSubstitute](https://nsubstitute.github.io/) (Testing isolation framework)
 - [Visual Paradigm Community Edition](https://www.visual-paradigm.com/download/community.jsp) (CASE tool for modeling and documentation)
 - [NetArchTest](https://github.com/BenMorris/NetArchTest) (Architecture Unit Tests library)
+- [Polly](https://github.com/App-vNext/Polly) (Resilience and transient-fault-handling library)
+- [SQL Stream Store](https://github.com/SQLStreamStore) (Library to assist with Event Sourcing)
+- [DbUp](https://dbup.readthedocs.io/en/latest/) (Database migrations deployment)
+- [SSDT Database Project](https://docs.microsoft.com/en-us/sql/ssdt/how-to-create-a-new-database-project) (Database structure versioning)
+- [GitHub Actions](https://docs.github.com/en/actions) (Continuous Integration workflows implementation)
+- [StyleCopAnalyzers](https://github.com/DotNetAnalyzers/StyleCopAnalyzers) (Static code analysis library)
+- [PlantUML](https://plantuml.com) (UML diagrams from textual description, diagrams as text)
+- [C4 Model](https://c4model.com/) (Model for visualising software architecture)
+- [C4-PlantUML](https://github.com/plantuml-stdlib/C4-PlantUML) (C4 Model for PlantUML plugin)
 
 ## 5. How to Run
 
-- Download and install .NET Core 2.2 SDK
+### Install .NET Core 3.1
+- Download and install .NET Core 3.1 SDK
+
+### Create database
 - Download and install MS SQL Server Express or other
-- Create an empty database and run [InitializeDatabase.sql](src/Database/InitializeDatabase.sql) script
-  
-  - 2 test users will be created - check the script for usernames and passwords
-- Set a database connection string called `MeetingsConnectionString` in the root of the API project's appsettings.json or use [Secrets](https://blogs.msdn.microsoft.com/mihansen/2017/09/10/managing-secrets-in-net-core-2-0-apps/)
+- Create an empty database using [CreateDatabase_Windows.sql](src/Database/CompanyName.MyMeetings.Database/Scripts/CreateDatabase_Windows.sql) or [CreateDatabase_Linux.sql](src/Database/CompanyName.MyMeetings.Database/Scripts/CreateDatabase_Linux.sql). Script adds **app** schema which is needed for migrations journal table. Change database file path if needed.
+- Build [DatabaseMigrator](src/Database/DatabaseMigrator) application
+- run database migrations:
 
-  Example config setting in appsettings.json for a database called `ModularMonolith`:
-  ```json
-  {
-	  "MeetingsConnectionString": "Server=(localdb)\\mssqllocaldb;Database=ModularMonolith;Trusted_Connection=True;"
-  }
-  ```
+```shell
+dotnet DatabaseMigrator.dll "connection_string" "scripts_directory_path"
+```
 
+*"connection_string"* - connection string to your database <br/>
+*"scripts_directory_path"* - [path to migration scripts](src/Database/CompanyName.MyMeetings.Database/Scripts/Migrations)
+
+### Seed database
+
+- Execute [SeedDatabase.sql](src/Database/CompanyName.MyMeetings.Database/Scripts/SeedDatabase.sql) script
+- 2 test users will be created - check the script for usernames and passwords
+
+### Configure connection string
+
+Set a database connection string called `MeetingsConnectionString` in the root of the API project's appsettings.json or use [Secrets](https://blogs.msdn.microsoft.com/mihansen/2017/09/10/managing-secrets-in-net-core-2-0-apps/)
+
+Example config setting in appsettings.json for a database called `ModularMonolith`:
+```json
+{
+	"MeetingsConnectionString": "Server=(localdb)\\mssqllocaldb;Database=ModularMonolith;Trusted_Connection=True;"
+}
+```
+### Configure startup in IDE
 - Set the Startup Item in your IDE to the API Project, not IIS Express
+
+### Authenticate
+
 - Once it is running you'll need a token to make API calls. This is done via OAuth2 [Resource Owner Password Grant Type](https://www.oauth.com/oauth2-servers/access-tokens/password-grant/). By default IdentityServer is configured with the following:
-  - `client_id = ro.client`
-  - `client_secret = secret` **(this is literally the value - not a statement that this value is secret!)**
-  - `scope = myMeetingsAPI openid profile`
-  - `grant_type = password`
+- `client_id = ro.client`
+- `client_secret = secret` **(this is literally the value - not a statement that this value is secret!)**
+- `scope = myMeetingsAPI openid profile`
+- `grant_type = password`
   
-  Include the credentials of a test user created in the [InitializeDatabase.sql](src/Database/InitializeDatabase.sql) script - for example:
-  - `username = testMember@mail.com`
-  - `password = testMemberPass`
+
+Include the credentials of a test user created in the [SeedDatabase.sql](src/Database/CompanyName.MyMeetings.Database/Scripts/SeedDatabase.sql) script - for example:
+- `username = testMember@mail.com`
+- `password = testMemberPass`
 
 **Example HTTP Request for an Access Token:**
 ```http
@@ -1022,6 +1860,18 @@ This will fetch an access token for this user to make authorized API requests us
 
 If you use a tool such as Postman to test your API, the token can be fetched and stored within the tool itself and appended to all API calls. Check your tool documentation for instructions.
 
+### Run using Docker Compose
+
+You can run whole application using [docker compose](https://docs.docker.com/compose/) from root folder:
+```shell
+docker-compose up
+```
+
+It will create following services: <br/>
+- MS SQL Server Database
+- Database Migrator
+- Application
+
 ## 6. Contribution
 
 This project is still under analysis and development. I assume its maintenance for a long time and I would appreciate your contribution to it. Please let me know by creating an Issue or Pull Request.
@@ -1030,17 +1880,26 @@ This project is still under analysis and development. I assume its maintenance f
 
 List of features/tasks/approaches to add:
 
-| Name                     | Priority | Status | Release date |
-| ------------------------ | -------- | -------- | -------- |
-| Domain Model Unit Tests | High     | Completed | 2019-09-10 |
-| Architecture Decision Log update | High     | Completed | 2019-11-09 |
-| API automated tests      | Normal   |    |    |
-| FrontEnd SPA application | Normal   |    |    |
-| Meeting comments feature | Low   |    |    |
-| Notifications feature | Low   |    |    |
-| Messages feature | Low   |    |    |
-| Migration to .NET Core 3.0 | Low   |    |    |
-| More advanced Payments module | Low   |    |    |
+| Name                     | Status | Release date |
+| ------------------------ | -------- | -------- |
+| Domain Model Unit Tests |Completed | 2019-09-10 |
+| Architecture Decision Log update |  Completed | 2019-11-09 |
+| Integration automated tests      | Completed | 2020-02-24 |
+| Migration to .NET Core 3.1 |Completed  |  2020-03-04  |
+| System Integration Testing | Completed  |  2020-03-28  |
+| More advanced Payments module | Completed  |  2020-07-11  |
+| Event Sourcing implementation | Completed  |  2020-07-11  |
+| Database Change Management | Completed  |  2020-08-23  |
+| Continuous Integration      | Completed  | 2020-09-01   |
+| StyleCop Static Code Analysis      | Completed  | 2020-09-05   |
+| FrontEnd SPA application | Completed |  2020-11-08  |
+| Docker support | Completed |  2020-11-26  |
+| PlantUML Conceptual Model | Completed |  2021-03-22  |
+| C4 Model | Completed |  2021-03-29  |
+| Meeting comments feature |    |    |
+| Notifications feature |     |    |
+| Messages feature |     |    |
+
 
 NOTE: Please don't hesitate to suggest something else or a change to the existing code. All proposals will be considered.
 
@@ -1063,6 +1922,8 @@ The project is under [MIT license](https://opensource.org/licenses/MIT).
 ## 10. Inspirations and Recommendations
 
 ### Modular Monolith
+- ["Modular Monolith: A Primer"](https://www.kamilgrzybek.com/design/modular-monolith-primer/) Modular Monolith architecture article series, Kamil Grzybek
+- ["Modular Monolith Architecture: One to rule them all"](https://www.youtube.com/watch?v=njDSXUWeik0) presentation, Kamil Grzybek
 - ["Modular Monoliths"](https://www.youtube.com/watch?v=5OjqD-ow8GE) presentation, Simon Brown
 - ["Majestic Modular Monoliths"](https://www.youtube.com/watch?v=BOvxJaklcr0) presentation, Axel Fontaine
 - ["Building Better Monoliths – Modulithic Applications with Spring Boot"](https://speakerdeck.com/olivergierke/building-better-monoliths-modulithic-applications-with-spring-boot-cd16e6ec-d334-497d-b9f6-3f92d5db035a) slides, Oliver Drotbohm
@@ -1120,6 +1981,8 @@ The project is under [MIT license](https://opensource.org/licenses/MIT).
 ### Testing
 - ["The Art of Unit Testing: with examples in C#"](https://www.amazon.com/Art-Unit-Testing-examples/dp/1617290890) book, Roy Osherove
 - ["Unit Test Your Architecture with ArchUnit"](https://blogs.oracle.com/javamagazine/unit-test-your-architecture-with-archunit) article, Jonas Havers
+- ["Unit Testing Principles, Practices, and Patterns"](https://www.amazon.com/Unit-Testing-Principles-Practices-Patterns/dp/1617296279) book, Vladimir Khorikov
+- ["Growing Object-Oriented Software, Guided by Tests"](https://www.amazon.com/Growing-Object-Oriented-Software-Guided-Tests/dp/0321503627) book, Steve Freeman, Nat Pryce
 
 ### UML
 - ["UML Distilled: A Brief Guide to the Standard Object Modeling Language (3rd Edition)"](https://www.amazon.com/UML-Distilled-Standard-Modeling-Language/dp/0321193687) book, Martin Fowler
@@ -1127,3 +1990,10 @@ The project is under [MIT license](https://opensource.org/licenses/MIT).
 ### Event Storming
 - ["Introducing EventStorming"](https://leanpub.com/introducing_eventstorming) book, Alberto Brandolini
 - ["Awesome EventStorming"](https://github.com/mariuszgil/awesome-eventstorming) GH repository, Mariusz Gil
+
+### Event Sourcing
+
+- ["Hands-On Domain-Driven Design with .NET Core: Tackling complexity in the heart of software by putting DDD principles into practice"](https://www.amazon.com/Hands-Domain-Driven-Design-NET-ebook/dp/B07C5WSR9B) book, Alexey Zimarev
+- ["Versioning in an Event Sourced System"](https://leanpub.com/esversioning) book, Greg Young
+- [Hands-On-Domain-Driven-Design-with-.NET-Core](https://github.com/PacktPublishing/Hands-On-Domain-Driven-Design-with-.NET-Core) GH repository, Alexey Zimarev
+- [EventSourcing.NetCore](https://github.com/oskardudycz/EventSourcing.NetCore) GH repository, Oskar Dudycz

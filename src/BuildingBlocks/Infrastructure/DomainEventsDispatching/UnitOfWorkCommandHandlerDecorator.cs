@@ -5,13 +5,14 @@ using MediatR;
 
 namespace CompanyName.MyMeetings.BuildingBlocks.Infrastructure.DomainEventsDispatching
 {
-    public class UnitOfWorkCommandHandlerDecorator<T> : IRequestHandler<T, Unit> where T:IRequest
+    public class UnitOfWorkCommandHandlerDecorator<T> : IRequestHandler<T, Unit>
+        where T : IRequest
     {
         private readonly IRequestHandler<T, Unit> _decorated;
         private readonly IUnitOfWork _unitOfWork;
 
         public UnitOfWorkCommandHandlerDecorator(
-            IRequestHandler<T, Unit> decorated, 
+            IRequestHandler<T, Unit> decorated,
             IUnitOfWork unitOfWork)
         {
             _decorated = decorated;

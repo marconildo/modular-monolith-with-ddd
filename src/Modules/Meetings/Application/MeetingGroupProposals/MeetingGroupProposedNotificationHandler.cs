@@ -20,8 +20,9 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Application.MeetingGroupPropos
             _eventsBus.Publish(new MeetingGroupProposedIntegrationEvent(
                 notification.Id,
                 notification.DomainEvent.OccurredOn,
-                notification.DomainEvent.Id.Value,
-                notification.DomainEvent.Name, notification.DomainEvent.Description,
+                notification.DomainEvent.MeetingGroupProposalId.Value,
+                notification.DomainEvent.Name,
+                notification.DomainEvent.Description,
                 notification.DomainEvent.LocationCity,
                 notification.DomainEvent.LocationCountryCode,
                 notification.DomainEvent.ProposalUserId.Value,

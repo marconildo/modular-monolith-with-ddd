@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using CompanyName.MyMeetings.BuildingBlocks.Application.Data;
 using CompanyName.MyMeetings.BuildingBlocks.Infrastructure;
 using CompanyName.MyMeetings.Modules.UserAccess.Application.Configuration.Commands;
 using CompanyName.MyMeetings.Modules.UserAccess.Application.Contracts;
@@ -32,7 +33,8 @@ namespace CompanyName.MyMeetings.Modules.UserAccess.Application.Authentication.A
                                "FROM [users].[v_Users] AS [User] " +
                                "WHERE [User].[Login] = @Login";
 
-            var user = await connection.QuerySingleOrDefaultAsync<UserDto>(sql,
+            var user = await connection.QuerySingleOrDefaultAsync<UserDto>(
+                sql,
                 new
                 {
                     request.Login,

@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
-using CompanyName.MyMeetings.BuildingBlocks.Infrastructure;
-using CompanyName.MyMeetings.Modules.Administration.Application.Configuration;
+using CompanyName.MyMeetings.BuildingBlocks.Application.Data;
+using CompanyName.MyMeetings.BuildingBlocks.Infrastructure.InternalCommands;
+using CompanyName.MyMeetings.BuildingBlocks.Infrastructure.Serialization;
 using CompanyName.MyMeetings.Modules.Administration.Application.Configuration.Commands;
 using CompanyName.MyMeetings.Modules.Administration.Application.Contracts;
 using Dapper;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace CompanyName.MyMeetings.Modules.Administration.Infrastructure.Configuration.Processing.InternalCommands
 {
@@ -17,9 +14,14 @@ namespace CompanyName.MyMeetings.Modules.Administration.Infrastructure.Configura
     {
         private readonly ISqlConnectionFactory _sqlConnectionFactory;
 
-        public CommandsScheduler(ISqlConnectionFactory sqlConnectionFactory)
+        private readonly IInternalCommandsMapper _internalCommandsMapper;
+
+        public CommandsScheduler(
+            ISqlConnectionFactory sqlConnectionFactory,
+            IInternalCommandsMapper internalCommandsMapper)
         {
             _sqlConnectionFactory = sqlConnectionFactory;
+            _internalCommandsMapper = internalCommandsMapper;
         }
 
         public async Task EnqueueAsync(ICommand command)
@@ -33,7 +35,7 @@ namespace CompanyName.MyMeetings.Modules.Administration.Infrastructure.Configura
             {
                 command.Id,
                 EnqueueDate = DateTime.UtcNow,
-                Type = command.GetType().FullName,
+                Type = _internalCommandsMapper.GetName(command.GetType()),
                 Data = JsonConvert.SerializeObject(command, new JsonSerializerSettings
                 {
                     ContractResolver = new AllPropertiesContractResolver()
@@ -41,22 +43,23 @@ namespace CompanyName.MyMeetings.Modules.Administration.Infrastructure.Configura
             });
         }
 
-        private class AllPropertiesContractResolver : DefaultContractResolver
+        public async Task EnqueueAsync<T>(ICommand<T> command)
         {
-            protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+            var connection = this._sqlConnectionFactory.GetOpenConnection();
+
+            const string sqlInsert = "INSERT INTO [administration].[InternalCommands] ([Id], [EnqueueDate] , [Type], [Data]) VALUES " +
+                                     "(@Id, @EnqueueDate, @Type, @Data)";
+
+            await connection.ExecuteAsync(sqlInsert, new
             {
-                var props = type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                    .Select(p => base.CreateProperty(p, memberSerialization))
-                    .Union(type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                        .Select(f => base.CreateProperty(f, memberSerialization)))
-                    .ToList();
-                props.ForEach(p =>
+                command.Id,
+                EnqueueDate = DateTime.UtcNow,
+                Type = _internalCommandsMapper.GetName(command.GetType()),
+                Data = JsonConvert.SerializeObject(command, new JsonSerializerSettings
                 {
-                    p.Writable = true;
-                    p.Readable = true;
-                });
-                return props;
-            }
+                    ContractResolver = new AllPropertiesContractResolver()
+                })
+            });
         }
     }
 }

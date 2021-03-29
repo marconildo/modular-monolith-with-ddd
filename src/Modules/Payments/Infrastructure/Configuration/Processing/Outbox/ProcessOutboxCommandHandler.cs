@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using CompanyName.MyMeetings.BuildingBlocks.Infrastructure;
-using CompanyName.MyMeetings.BuildingBlocks.Infrastructure.SeedWork;
+using CompanyName.MyMeetings.BuildingBlocks.Application.Data;
+using CompanyName.MyMeetings.BuildingBlocks.Application.Events;
+using CompanyName.MyMeetings.BuildingBlocks.Infrastructure.DomainEventsDispatching;
 using CompanyName.MyMeetings.Modules.Payments.Application.Configuration.Commands;
 using Dapper;
 using MediatR;
@@ -16,25 +17,31 @@ namespace CompanyName.MyMeetings.Modules.Payments.Infrastructure.Configuration.P
     internal class ProcessOutboxCommandHandler : ICommandHandler<ProcessOutboxCommand>
     {
         private readonly IMediator _mediator;
+
         private readonly ISqlConnectionFactory _sqlConnectionFactory;
 
+        private readonly IDomainNotificationsMapper _domainNotificationsMapper;
+
         public ProcessOutboxCommandHandler(
-            IMediator mediator, 
-            ISqlConnectionFactory sqlConnectionFactory)
+            IMediator mediator,
+            ISqlConnectionFactory sqlConnectionFactory,
+            IDomainNotificationsMapper domainNotificationsMapper)
         {
             _mediator = mediator;
             _sqlConnectionFactory = sqlConnectionFactory;
+            _domainNotificationsMapper = domainNotificationsMapper;
         }
 
         public async Task<Unit> Handle(ProcessOutboxCommand command, CancellationToken cancellationToken)
         {
             var connection = this._sqlConnectionFactory.GetOpenConnection();
-            const string sql = "SELECT " +
-                               "[OutboxMessage].[Id], " +
-                               "[OutboxMessage].[Type], " +
-                               "[OutboxMessage].[Data] " +
-                               "FROM [payments].[OutboxMessages] AS [OutboxMessage] " +
-                               "WHERE [OutboxMessage].[ProcessedDate] IS NULL";
+            string sql = "SELECT " +
+                         $"[OutboxMessage].[Id] AS [{nameof(OutboxMessageDto.Id)}], " +
+                         $"[OutboxMessage].[Type] AS [{nameof(OutboxMessageDto.Type)}], " +
+                         $"[OutboxMessage].[Data] AS [{nameof(OutboxMessageDto.Data)}] " +
+                         "FROM [payments].[OutboxMessages] AS [OutboxMessage] " +
+                         "WHERE [OutboxMessage].[ProcessedDate] IS NULL " +
+                         "ORDER BY [OutboxMessage].[OccurredOn]";
 
             var messages = await connection.QueryAsync<OutboxMessageDto>(sql);
             var messagesList = messages.AsList();
@@ -46,13 +53,12 @@ namespace CompanyName.MyMeetings.Modules.Payments.Infrastructure.Configuration.P
             {
                 foreach (var message in messagesList)
                 {
-                    Type type = Assemblies.Application
-                        .GetType(message.Type);
-                    var request = JsonConvert.DeserializeObject(message.Data, type) as IDomainEventNotification;
+                    var type = _domainNotificationsMapper.GetType(message.Type);
+                    var @event = JsonConvert.DeserializeObject(message.Data, type) as IDomainEventNotification;
 
-                    using (LogContext.Push(new OutboxMessageContextEnricher(request)))
+                    using (LogContext.Push(new OutboxMessageContextEnricher(@event)))
                     {
-                        await this._mediator.Publish(request, cancellationToken);
+                        await this._mediator.Publish(@event, cancellationToken);
 
                         await connection.ExecuteAsync(sqlUpdateProcessedDate, new
                         {
@@ -74,6 +80,7 @@ namespace CompanyName.MyMeetings.Modules.Payments.Infrastructure.Configuration.P
             {
                 _notification = notification;
             }
+
             public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
             {
                 logEvent.AddOrUpdateProperty(new LogEventProperty("Context", new ScalarValue($"OutboxMessage:{_notification.Id.ToString()}")));

@@ -19,12 +19,12 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Domain.UnitTests.Meetings
             {
                 CreatorId = creatorId,
                 MeetingTerm = MeetingTerm.CreateNewBetweenDates(DateTime.UtcNow.AddDays(-2), DateTime.UtcNow.AddDays(-1))
-            });         
+            });
 
             AssertBrokenRule<MeetingCannotBeChangedAfterStartRule>(() =>
             {
                 meetingTestData.Meeting.AddAttendee(meetingTestData.MeetingGroup, creatorId, 0);
-            });          
+            });
         }
 
         [Test]
@@ -35,12 +35,12 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Domain.UnitTests.Meetings
             {
                 CreatorId = creatorId,
                 RvspTerm = Term.CreateNewBetweenDates(DateTime.UtcNow.AddDays(-2), DateTime.UtcNow.AddDays(-1))
-            });         
+            });
 
             AssertBrokenRule<AttendeeCanBeAddedOnlyInRsvpTermRule>(() =>
             {
                 meetingTestData.Meeting.AddAttendee(meetingTestData.MeetingGroup, creatorId, 0);
-            });          
+            });
         }
 
         [Test]
@@ -50,12 +50,12 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Domain.UnitTests.Meetings
             var meetingTestData = CreateMeetingTestData(new MeetingTestDataOptions
             {
                 CreatorId = creatorId
-            });         
+            });
 
             AssertBrokenRule<MeetingAttendeeMustBeAMemberOfGroupRule>(() =>
             {
                 meetingTestData.Meeting.AddAttendee(meetingTestData.MeetingGroup, new MemberId(Guid.NewGuid()), 0);
-            });          
+            });
         }
 
         [Test]
@@ -66,7 +66,7 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Domain.UnitTests.Meetings
             var meetingTestData = CreateMeetingTestData(new MeetingTestDataOptions
             {
                 CreatorId = creatorId
-            });    
+            });
             var newMemberId = new MemberId(Guid.NewGuid());
             meetingTestData.MeetingGroup.JoinToGroupMember(newMemberId);
             meetingTestData.Meeting.AddAttendee(meetingTestData.MeetingGroup, newMemberId, 0);
@@ -76,7 +76,7 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Domain.UnitTests.Meetings
             {
                 // Act
                 meetingTestData.Meeting.AddAttendee(meetingTestData.MeetingGroup, newMemberId, 0);
-            });          
+            });
         }
 
         [Test]
@@ -87,14 +87,14 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Domain.UnitTests.Meetings
             {
                 CreatorId = creatorId,
                 GuestsLimit = 5
-            });    
+            });
             var newMemberId = new MemberId(Guid.NewGuid());
-            meetingTestData.MeetingGroup.JoinToGroupMember(newMemberId);           
+            meetingTestData.MeetingGroup.JoinToGroupMember(newMemberId);
 
             AssertBrokenRule<MeetingGuestsNumberIsAboveLimitRule>(() =>
             {
                 meetingTestData.Meeting.AddAttendee(meetingTestData.MeetingGroup, newMemberId, 6);
-            });          
+            });
         }
 
         [Test]
@@ -105,11 +105,11 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Domain.UnitTests.Meetings
             {
                 CreatorId = creatorId,
                 AttendeesLimit = 5
-            });    
+            });
             var newMemberId = new MemberId(Guid.NewGuid());
-            meetingTestData.MeetingGroup.JoinToGroupMember(newMemberId);   
+            meetingTestData.MeetingGroup.JoinToGroupMember(newMemberId);
             var aboveLimitMember = new MemberId(Guid.NewGuid());
-            meetingTestData.MeetingGroup.JoinToGroupMember(aboveLimitMember);  
+            meetingTestData.MeetingGroup.JoinToGroupMember(aboveLimitMember);
 
             meetingTestData.Meeting.AddAttendee(meetingTestData.MeetingGroup, newMemberId, 3);
 
@@ -117,7 +117,7 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Domain.UnitTests.Meetings
             AssertBrokenRule<MeetingAttendeesNumberIsAboveLimitRule>(() =>
             {
                 meetingTestData.Meeting.AddAttendee(meetingTestData.MeetingGroup, aboveLimitMember, 0);
-            });          
+            });
         }
 
         [Test]
@@ -127,7 +127,7 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Domain.UnitTests.Meetings
             var meetingTestData = CreateMeetingTestData(new MeetingTestDataOptions
             {
                 CreatorId = creatorId
-            });    
+            });
             var newMemberId = new MemberId(Guid.NewGuid());
             meetingTestData.MeetingGroup.JoinToGroupMember(newMemberId);
 
@@ -137,9 +137,9 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Domain.UnitTests.Meetings
                 AssertPublishedDomainEvents<MeetingAttendeeAddedDomainEvent>(meetingTestData.Meeting);
             Assert.That(meetingAttendeesAddedEvents.Count, Is.EqualTo(2));
             Assert.That(meetingAttendeesAddedEvents[0].AttendeeId, Is.EqualTo(creatorId));
-            Assert.That(meetingAttendeesAddedEvents[0].Role, Is.EqualTo(MeetingAttendeeRole.Host));
+            Assert.That(meetingAttendeesAddedEvents[0].Role, Is.EqualTo(MeetingAttendeeRole.Host.Value));
             Assert.That(meetingAttendeesAddedEvents[1].AttendeeId, Is.EqualTo(newMemberId));
-            Assert.That(meetingAttendeesAddedEvents[1].Role, Is.EqualTo(MeetingAttendeeRole.Attendee));
+            Assert.That(meetingAttendeesAddedEvents[1].Role, Is.EqualTo(MeetingAttendeeRole.Attendee.Value));
         }
 
         [Test]
@@ -149,11 +149,11 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Domain.UnitTests.Meetings
             var meetingTestData = CreateMeetingTestData(new MeetingTestDataOptions
             {
                 CreatorId = creatorId
-            });    
+            });
             var newMemberId = new MemberId(Guid.NewGuid());
             meetingTestData.MeetingGroup.JoinToGroupMember(newMemberId);
             meetingTestData.Meeting.AddNotAttendee(newMemberId);
-            
+
             meetingTestData.Meeting.AddAttendee(meetingTestData.MeetingGroup, newMemberId, 0);
 
             var meetingNotAttendeeChangedDecision = AssertPublishedDomainEvent<MeetingNotAttendeeChangedDecisionDomainEvent>(meetingTestData.Meeting);

@@ -1,5 +1,5 @@
-﻿using CompanyName.MyMeetings.BuildingBlocks.Infrastructure.Outbox;
-using CompanyName.MyMeetings.Modules.Administration.Infrastructure.Domain;
+﻿using System.Threading.Tasks;
+using CompanyName.MyMeetings.BuildingBlocks.Application.Outbox;
 
 namespace CompanyName.MyMeetings.Modules.Administration.Infrastructure.Outbox
 {
@@ -15,6 +15,11 @@ namespace CompanyName.MyMeetings.Modules.Administration.Infrastructure.Outbox
         public void Add(OutboxMessage message)
         {
             _context.OutboxMessages.Add(message);
+        }
+
+        public Task Save()
+        {
+            return Task.CompletedTask; // Save is done automatically using EF Core Change Tracking mechanism during SaveChanges.
         }
     }
 }

@@ -7,30 +7,35 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Domain.Meetings.Events
     public class MeetingAttendeeAddedDomainEvent : DomainEventBase
     {
         public MeetingAttendeeAddedDomainEvent(
-            MeetingId meetingId, 
-            MemberId attendeeId, 
-            DateTime rsvpDate, 
-            MeetingAttendeeRole role, 
+            MeetingId meetingId,
+            MemberId attendeeId,
+            DateTime rsvpDate,
+            string role,
             int guestsNumber,
-            MoneyValue fee)
+            decimal? feeValue,
+            string feeCurrency)
         {
             MeetingId = meetingId;
             AttendeeId = attendeeId;
             RSVPDate = rsvpDate;
             Role = role;
             GuestsNumber = guestsNumber;
-            Fee = fee;
+            FeeValue = feeValue;
+            FeeCurrency = feeCurrency;
         }
 
         public MeetingId MeetingId { get; }
+
         public MemberId AttendeeId { get; }
 
         public DateTime RSVPDate { get; }
 
-        public MeetingAttendeeRole Role { get; }
+        public string Role { get; }
 
         public int GuestsNumber { get; }
 
-        public MoneyValue Fee { get; }
+        public decimal? FeeValue { get; }
+
+        public string FeeCurrency { get; }
     }
 }

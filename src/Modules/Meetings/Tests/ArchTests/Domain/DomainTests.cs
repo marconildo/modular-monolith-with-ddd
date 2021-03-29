@@ -18,7 +18,7 @@ namespace CompanyName.MyMeetings.Modules.Meetings.ArchitectureTests.Domain
                 .That()
                     .Inherit(typeof(DomainEventBase))
                         .Or()
-                    .Inherit(typeof(IDomainEvent))
+                    .ImplementInterface(typeof(IDomainEvent))
                 .GetTypes();
 
             AssertAreImmutable(types);
@@ -153,7 +153,6 @@ namespace CompanyName.MyMeetings.Modules.Meetings.ArchitectureTests.Domain
                 var constructors = domainObjectType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
                 foreach (var constructorInfo in constructors)
                 {
-
                     if (!constructorInfo.IsPrivate)
                     {
                         failingTypes.Add(domainObjectType);
@@ -185,7 +184,7 @@ namespace CompanyName.MyMeetings.Modules.Meetings.ArchitectureTests.Domain
                 var constructors = entityType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance);
                 foreach (var constructorInfo in constructors)
                 {
-                    var parameters = constructorInfo.GetParameters().Select( x => x.Name.ToLower()).ToList();
+                    var parameters = constructorInfo.GetParameters().Select(x => x.Name.ToLower()).ToList();
 
                     if (names.Intersect(parameters).Count() == names.Count)
                     {
@@ -210,7 +209,7 @@ namespace CompanyName.MyMeetings.Modules.Meetings.ArchitectureTests.Domain
                 .That()
                 .Inherit(typeof(DomainEventBase))
                 .Or()
-                .Inherit(typeof(IDomainEvent))
+                .ImplementInterface(typeof(IDomainEvent))
                 .Should().HaveNameEndingWith("DomainEvent")
                 .GetResult();
 
@@ -222,7 +221,7 @@ namespace CompanyName.MyMeetings.Modules.Meetings.ArchitectureTests.Domain
         {
             var result = Types.InAssembly(DomainAssembly)
                 .That()
-                .Inherit(typeof(IBusinessRule))
+                .ImplementInterface(typeof(IBusinessRule))
                 .Should().HaveNameEndingWith("Rule")
                 .GetResult();
 

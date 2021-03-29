@@ -20,11 +20,13 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Infrastructure.Configuration.E
             var eventBus = MeetingsCompositionRoot.BeginLifetimeScope().Resolve<IEventsBus>();
 
             SubscribeToIntegrationEvent<MeetingGroupProposalAcceptedIntegrationEvent>(eventBus, logger);
-            SubscribeToIntegrationEvent<PaymentRegisteredIntegrationEvent>(eventBus, logger);
+            SubscribeToIntegrationEvent<SubscriptionExpirationDateChangedIntegrationEvent>(eventBus, logger);
             SubscribeToIntegrationEvent<NewUserRegisteredIntegrationEvent>(eventBus, logger);
+            SubscribeToIntegrationEvent<MeetingFeePaidIntegrationEvent>(eventBus, logger);
         }
 
-        private static void SubscribeToIntegrationEvent<T>(IEventsBus eventBus, ILogger logger) where T:  IntegrationEvent
+        private static void SubscribeToIntegrationEvent<T>(IEventsBus eventBus, ILogger logger)
+            where T : IntegrationEvent
         {
             logger.Information("Subscribe to {@IntegrationEvent}", typeof(T).FullName);
             eventBus.Subscribe(

@@ -18,8 +18,6 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Infrastructure.Domain.Meetings
             builder.Property<MeetingGroupId>("_meetingGroupId").HasColumnName("MeetingGroupId");
             builder.Property<string>("_title").HasColumnName("Title");
             builder.Property<string>("_description").HasColumnName("Description");
-            builder.Property<int?>("_attendeesLimit").HasColumnName("AttendeesLimit");
-            builder.Property<int>("_guestsLimit").HasColumnName("GuestsLimit");
             builder.Property<MemberId>("_creatorId").HasColumnName("CreatorId");
             builder.Property<MemberId>("_changeMemberId").HasColumnName("ChangeMemberId");
             builder.Property<DateTime>("_createDate").HasColumnName("CreateDate");
@@ -56,11 +54,11 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Infrastructure.Domain.Meetings
 
             builder.OwnsMany<MeetingAttendee>("_attendees", y =>
             {
+                y.WithOwner().HasForeignKey("MeetingId");
                 y.ToTable("MeetingAttendees", "meetings");
                 y.Property<MemberId>("AttendeeId");
                 y.Property<MeetingId>("MeetingId");
                 y.Property<DateTime>("_decisionDate").HasColumnName("DecisionDate");
-                y.HasForeignKey("MeetingId");
                 y.HasKey("AttendeeId", "MeetingId", "_decisionDate");
                 y.Property<bool>("_decisionChanged").HasColumnName("DecisionChanged");
                 y.Property<int>("_guestsNumber").HasColumnName("GuestsNumber");
@@ -69,33 +67,40 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Infrastructure.Domain.Meetings
                 y.Property<string>("_removingReason").HasColumnName("RemovingReason");
                 y.Property<MemberId>("_removingMemberId").HasColumnName("RemovingMemberId");
                 y.Property<DateTime?>("_removedDate").HasColumnName("RemovedDate");
+                y.Property<bool>("_isFeePaid").HasColumnName("IsFeePaid");
 
                 y.OwnsOne<MeetingAttendeeRole>("_role", b =>
                 {
-                    b.Property<string>(x => x.Value).HasColumnName("RoleCode");
+                    b.Property(x => x.Value).HasColumnName("RoleCode");
+                });
+
+                y.OwnsOne<MoneyValue>("_fee", b =>
+                {
+                    b.Property(p => p.Value).HasColumnName("FeeValue");
+                    b.Property(p => p.Currency).HasColumnName("FeeCurrency");
                 });
             });
 
             builder.OwnsMany<MeetingNotAttendee>("_notAttendees", y =>
             {
+                y.WithOwner().HasForeignKey("MeetingId");
                 y.ToTable("MeetingNotAttendees", "meetings");
                 y.Property<MemberId>("MemberId");
                 y.Property<MeetingId>("MeetingId");
                 y.Property<DateTime>("_decisionDate").HasColumnName("DecisionDate");
-                y.HasForeignKey("MeetingId");
-                y.HasKey("MemberId", "MeetingId", "_decisionDate");              
+                y.HasKey("MemberId", "MeetingId", "_decisionDate");
                 y.Property<bool>("_decisionChanged").HasColumnName("DecisionChanged");
                 y.Property<DateTime?>("_decisionChangeDate").HasColumnName("DecisionChangeDate");
             });
 
             builder.OwnsMany<MeetingWaitlistMember>("_waitlistMembers", y =>
             {
+                y.WithOwner().HasForeignKey("MeetingId");
                 y.ToTable("MeetingWaitlistMembers", "meetings");
                 y.Property<MemberId>("MemberId");
                 y.Property<MeetingId>("MeetingId");
                 y.Property<DateTime>("SignUpDate").HasColumnName("SignUpDate");
-                y.HasForeignKey("MeetingId");
-                y.HasKey("MemberId", "MeetingId", "SignUpDate");              
+                y.HasKey("MemberId", "MeetingId", "SignUpDate");
                 y.Property<bool>("_isSignedOff").HasColumnName("IsSignedOff");
                 y.Property<DateTime?>("_signOffDate").HasColumnName("SignOffDate");
 

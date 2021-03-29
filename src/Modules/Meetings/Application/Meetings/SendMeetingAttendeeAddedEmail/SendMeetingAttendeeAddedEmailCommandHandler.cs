@@ -1,5 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using CompanyName.MyMeetings.BuildingBlocks.Application.Data;
+using CompanyName.MyMeetings.BuildingBlocks.Application.Emails;
 using CompanyName.MyMeetings.BuildingBlocks.Infrastructure;
 using CompanyName.MyMeetings.BuildingBlocks.Infrastructure.Emails;
 using CompanyName.MyMeetings.Modules.Meetings.Application.Configuration.Commands;
@@ -14,7 +16,7 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Application.Meetings.SendMeeti
         private readonly IEmailSender _emailSender;
 
         internal SendMeetingAttendeeAddedEmailCommandHandler(
-            ISqlConnectionFactory sqlConnectionFactory, 
+            ISqlConnectionFactory sqlConnectionFactory,
             IEmailSender emailSender)
         {
             _sqlConnectionFactory = sqlConnectionFactory;
@@ -29,7 +31,9 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Application.Meetings.SendMeeti
 
             var meeting = await MeetingsQueryHelper.GetMeeting(request.MeetingId, connection);
 
-            var email = new EmailMessage(member.Email, $"You joined to {meeting.Title} meeting.",
+            var email = new EmailMessage(
+                member.Email,
+                $"You joined to {meeting.Title} meeting.",
                 $"You joined to {meeting.Title} title at {meeting.TermStartDate.ToShortDateString()} - {meeting.TermEndDate.ToShortDateString()}, location {meeting.LocationAddress}, {meeting.LocationPostalCode}, {meeting.LocationCity}");
 
             _emailSender.SendEmail(email);

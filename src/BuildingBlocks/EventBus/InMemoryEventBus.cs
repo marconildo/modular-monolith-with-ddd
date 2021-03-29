@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using CompanyName.MyMeetings.BuildingBlocks.Infrastructure.EventBus;
 
 namespace CompanyName.MyMeetings.BuildingBlocks.EventBus
@@ -19,23 +20,25 @@ namespace CompanyName.MyMeetings.BuildingBlocks.EventBus
 
         private readonly List<HandlerSubscription> _handlers;
 
-        public void Subscribe<T>(IIntegrationEventHandler<T> handler) where T : IntegrationEvent
+        public void Subscribe<T>(IIntegrationEventHandler<T> handler)
+            where T : IntegrationEvent
         {
             _handlers.Add(new HandlerSubscription(handler, typeof(T).FullName));
         }
 
-        public void Publish<T>(T @event) where T : IntegrationEvent
+        public async Task Publish<T>(T @event)
+            where T : IntegrationEvent
         {
             var eventType = @event.GetType();
 
             var integrationEventHandlers = _handlers.Where(x => x.EventName == eventType.FullName).ToList();
-         
+
             foreach (var integrationEventHandler in integrationEventHandlers)
             {
                 if (integrationEventHandler.Handler is IIntegrationEventHandler<T> handler)
                 {
-                    handler.Handle(@event);
-                }               
+                    await handler.Handle(@event);
+                }
             }
         }
 
@@ -47,7 +50,7 @@ namespace CompanyName.MyMeetings.BuildingBlocks.EventBus
                 EventName = eventName;
             }
 
-            public IIntegrationEventHandler Handler { get;  }
+            public IIntegrationEventHandler Handler { get; }
 
             public string EventName { get; }
         }

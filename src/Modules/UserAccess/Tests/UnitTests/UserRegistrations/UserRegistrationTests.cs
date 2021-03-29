@@ -20,11 +20,17 @@ namespace CompanyName.MyMeetings.Modules.UserAccess.Domain.UnitTests.UserRegistr
             // Act
             var userRegistration =
                 UserRegistration.RegisterNewUser(
-                    "login", "password", "test@email", 
-                    "firstName", "lastName", usersCounter);
+                    "login",
+                    "password",
+                    "test@email",
+                    "firstName",
+                    "lastName",
+                    usersCounter,
+                    "confirmLink");
 
             // Assert
-            var newUserRegisteredDomainEvent = AssertPublishedDomainEvent<NewUserRegisteredDomainEvent>(userRegistration);
+            var newUserRegisteredDomainEvent =
+                AssertPublishedDomainEvent<NewUserRegisteredDomainEvent>(userRegistration);
             Assert.That(newUserRegisteredDomainEvent.UserRegistrationId, Is.EqualTo(userRegistration.Id));
         }
 
@@ -40,8 +46,13 @@ namespace CompanyName.MyMeetings.Modules.UserAccess.Domain.UnitTests.UserRegistr
             {
                 // Act
                 UserRegistration.RegisterNewUser(
-                    "login", "password", "test@email",
-                    "firstName", "lastName", usersCounter);
+                    "login",
+                    "password",
+                    "test@email",
+                    "firstName",
+                    "lastName",
+                    usersCounter,
+                    "confirmLink");
             });
         }
 
@@ -51,12 +62,18 @@ namespace CompanyName.MyMeetings.Modules.UserAccess.Domain.UnitTests.UserRegistr
             var usersCounter = Substitute.For<IUsersCounter>();
 
             var registration = UserRegistration.RegisterNewUser(
-                    "login", "password", "test@email",
-                    "firstName", "lastName", usersCounter);
+                "login",
+                "password",
+                "test@email",
+                "firstName",
+                "lastName",
+                usersCounter,
+                "confirmLink");
 
             registration.Confirm();
 
-            var userRegistrationConfirmedDomainEvent = AssertPublishedDomainEvent<UserRegistrationConfirmedDomainEvent>(registration);
+            var userRegistrationConfirmedDomainEvent =
+                AssertPublishedDomainEvent<UserRegistrationConfirmedDomainEvent>(registration);
 
             Assert.That(userRegistrationConfirmedDomainEvent.UserRegistrationId, Is.EqualTo(registration.Id));
         }
@@ -67,15 +84,17 @@ namespace CompanyName.MyMeetings.Modules.UserAccess.Domain.UnitTests.UserRegistr
             var usersCounter = Substitute.For<IUsersCounter>();
 
             var registration = UserRegistration.RegisterNewUser(
-                "login", "password", "test@email",
-                "firstName", "lastName", usersCounter);
+                "login",
+                "password",
+                "test@email",
+                "firstName",
+                "lastName",
+                usersCounter,
+                "confirmLink");
 
             registration.Confirm();
-            
-            AssertBrokenRule<UserRegistrationCannotBeConfirmedMoreThanOnceRule>(() =>
-            {
-                registration.Confirm();
-            });
+
+            AssertBrokenRule<UserRegistrationCannotBeConfirmedMoreThanOnceRule>(() => { registration.Confirm(); });
         }
 
         [Test]
@@ -84,15 +103,17 @@ namespace CompanyName.MyMeetings.Modules.UserAccess.Domain.UnitTests.UserRegistr
             var usersCounter = Substitute.For<IUsersCounter>();
 
             var registration = UserRegistration.RegisterNewUser(
-                "login", "password", "test@email",
-                "firstName", "lastName", usersCounter);
+                "login",
+                "password",
+                "test@email",
+                "firstName",
+                "lastName",
+                usersCounter,
+                "confirmLink");
 
             registration.Expire();
-            
-            AssertBrokenRule<UserRegistrationCannotBeConfirmedAfterExpirationRule>(() =>
-            {
-                registration.Confirm();
-            });
+
+            AssertBrokenRule<UserRegistrationCannotBeConfirmedAfterExpirationRule>(() => { registration.Confirm(); });
         }
 
         [Test]
@@ -101,14 +122,19 @@ namespace CompanyName.MyMeetings.Modules.UserAccess.Domain.UnitTests.UserRegistr
             var usersCounter = Substitute.For<IUsersCounter>();
 
             var registration = UserRegistration.RegisterNewUser(
-                "login", "password", "test@email",
-                "firstName", "lastName", usersCounter);
+                "login",
+                "password",
+                "test@email",
+                "firstName",
+                "lastName",
+                usersCounter,
+                "confirmLink");
 
             registration.Expire();
 
             var userRegistrationExpired = AssertPublishedDomainEvent<UserRegistrationExpiredDomainEvent>(registration);
 
-            Assert.That(userRegistrationExpired.UserRegistrationId, Is.EqualTo(registration.Id));          
+            Assert.That(userRegistrationExpired.UserRegistrationId, Is.EqualTo(registration.Id));
         }
 
         [Test]
@@ -117,15 +143,17 @@ namespace CompanyName.MyMeetings.Modules.UserAccess.Domain.UnitTests.UserRegistr
             var usersCounter = Substitute.For<IUsersCounter>();
 
             var registration = UserRegistration.RegisterNewUser(
-                "login", "password", "test@email",
-                "firstName", "lastName", usersCounter);
+                "login",
+                "password",
+                "test@email",
+                "firstName",
+                "lastName",
+                usersCounter,
+                "confirmLink");
 
             registration.Expire();
 
-            AssertBrokenRule<UserRegistrationCannotBeExpiredMoreThanOnceRule>(() =>
-            {
-                registration.Expire();
-            });       
+            AssertBrokenRule<UserRegistrationCannotBeExpiredMoreThanOnceRule>(() => { registration.Expire(); });
         }
 
         [Test]
@@ -134,8 +162,13 @@ namespace CompanyName.MyMeetings.Modules.UserAccess.Domain.UnitTests.UserRegistr
             var usersCounter = Substitute.For<IUsersCounter>();
 
             var registration = UserRegistration.RegisterNewUser(
-                "login", "password", "test@email",
-                "firstName", "lastName", usersCounter);
+                "login",
+                "password",
+                "test@email",
+                "firstName",
+                "lastName",
+                usersCounter,
+                "confirmLink");
 
             registration.Confirm();
 
@@ -153,14 +186,16 @@ namespace CompanyName.MyMeetings.Modules.UserAccess.Domain.UnitTests.UserRegistr
             var usersCounter = Substitute.For<IUsersCounter>();
 
             var registration = UserRegistration.RegisterNewUser(
-                "login", "password", "test@email",
-                "firstName", "lastName", usersCounter);
+                "login",
+                "password",
+                "test@email",
+                "firstName",
+                "lastName",
+                usersCounter,
+                "confirmLink");
 
             AssertBrokenRule<UserCannotBeCreatedWhenRegistrationIsNotConfirmedRule>(
-                () =>
-                {
-                    registration.CreateUser(); 
-                });
+                () => { registration.CreateUser(); });
         }
     }
 }

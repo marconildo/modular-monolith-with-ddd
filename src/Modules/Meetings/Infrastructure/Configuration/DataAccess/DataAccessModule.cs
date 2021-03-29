@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using CompanyName.MyMeetings.BuildingBlocks.Application.Data;
 using CompanyName.MyMeetings.BuildingBlocks.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -45,7 +46,7 @@ namespace CompanyName.MyMeetings.Modules.Meetings.Infrastructure.Configuration.D
                 .Where(type => type.Name.EndsWith("Repository"))
                 .AsImplementedInterfaces()
                 .InstancePerLifetimeScope()
-                .FindConstructorsWith(new AllConstructorFinder());;
+                .FindConstructorsWith(new AllConstructorFinder());
         }
     }
 }

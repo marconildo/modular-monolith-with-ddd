@@ -5,14 +5,15 @@ using Newtonsoft.Json;
 
 namespace CompanyName.MyMeetings.Modules.Meetings.Application.MeetingGroups.CreateNewMeetingGroup
 {
-    internal class CreateNewMeetingGroupCommand : InternalCommandBase
+    public class CreateNewMeetingGroupCommand : InternalCommandBase
     {
         [JsonConstructor]
-        internal CreateNewMeetingGroupCommand(Guid id, MeetingGroupProposalId meetingGroupProposalId) : base(id)
+        public CreateNewMeetingGroupCommand(Guid id, MeetingGroupProposalId meetingGroupProposalId)
+            : base(id)
         {
             this.MeetingGroupProposalId = meetingGroupProposalId;
         }
 
-        internal MeetingGroupProposalId MeetingGroupProposalId { get;  }
+        internal MeetingGroupProposalId MeetingGroupProposalId { get; }
     }
 }

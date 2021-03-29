@@ -9,30 +9,30 @@ using MediatR;
 
 namespace CompanyName.MyMeetings.Modules.Meetings.Application.MeetingGroupProposals.ProposeMeetingGroup
 {
-    internal class ProposeMeetingGroupCommandHandler : ICommandHandler<ProposeMeetingGroupCommand>
+    internal class ProposeMeetingGroupCommandHandler : ICommandHandler<ProposeMeetingGroupCommand, Guid>
     {
         private readonly IMeetingGroupProposalRepository _meetingGroupProposalRepository;
         private readonly IMemberContext _memberContext;
 
         internal ProposeMeetingGroupCommandHandler(
-            IMeetingGroupProposalRepository meetingGroupProposalRepository, 
+            IMeetingGroupProposalRepository meetingGroupProposalRepository,
             IMemberContext memberContext)
         {
             _meetingGroupProposalRepository = meetingGroupProposalRepository;
             _memberContext = memberContext;
         }
 
-        public async Task<Unit> Handle(ProposeMeetingGroupCommand request, CancellationToken cancellationToken)
+        public async Task<Guid> Handle(ProposeMeetingGroupCommand request, CancellationToken cancellationToken)
         {
             var meetingGroupProposal = MeetingGroupProposal.ProposeNew(
-                request.Name, 
+                request.Name,
                 request.Description,
-                MeetingGroupLocation.CreateNew(request.LocationCity, request.LocationCountryCode), 
+                MeetingGroupLocation.CreateNew(request.LocationCity, request.LocationCountryCode),
                 _memberContext.MemberId);
 
             await _meetingGroupProposalRepository.AddAsync(meetingGroupProposal);
 
-            return new Unit();
+            return meetingGroupProposal.Id.Value;
         }
     }
 }

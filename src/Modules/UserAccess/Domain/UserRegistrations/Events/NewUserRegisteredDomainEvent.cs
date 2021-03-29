@@ -19,9 +19,17 @@ namespace CompanyName.MyMeetings.Modules.UserAccess.Domain.UserRegistrations.Eve
 
         public DateTime RegisterDate { get; }
 
+        public string ConfirmLink { get; }
+
         public NewUserRegisteredDomainEvent(
             UserRegistrationId userRegistrationId,
-            string login, string email, string firstName, string lastName, string name, DateTime registerDate)
+            string login,
+            string email,
+            string firstName,
+            string lastName,
+            string name,
+            DateTime registerDate,
+            string confirmLink)
         {
             UserRegistrationId = userRegistrationId;
             Login = login;
@@ -30,6 +38,7 @@ namespace CompanyName.MyMeetings.Modules.UserAccess.Domain.UserRegistrations.Eve
             LastName = lastName;
             Name = name;
             RegisterDate = registerDate;
+            ConfirmLink = confirmLink;
         }
     }
 }

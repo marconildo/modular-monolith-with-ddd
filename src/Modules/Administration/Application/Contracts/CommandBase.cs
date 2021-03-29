@@ -2,11 +2,9 @@
 
 namespace CompanyName.MyMeetings.Modules.Administration.Application.Contracts
 {
-    public class CommandBase : ICommand
+    public abstract class CommandBase<TResult> : ICommand<TResult>
     {
-        public Guid Id { get; }
-
-        public CommandBase()
+        protected CommandBase()
         {
             this.Id = Guid.NewGuid();
         }
@@ -15,5 +13,7 @@ namespace CompanyName.MyMeetings.Modules.Administration.Application.Contracts
         {
             this.Id = id;
         }
+
+        public Guid Id { get; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using CompanyName.MyMeetings.BuildingBlocks.Application.Data;
 
 namespace CompanyName.MyMeetings.BuildingBlocks.Infrastructure
 {
@@ -23,6 +24,19 @@ namespace CompanyName.MyMeetings.BuildingBlocks.Infrastructure
             }
 
             return this._connection;
+        }
+
+        public IDbConnection CreateNewConnection()
+        {
+            var connection = new SqlConnection(_connectionString);
+            connection.Open();
+
+            return connection;
+        }
+
+        public string GetConnectionString()
+        {
+            return _connectionString;
         }
 
         public void Dispose()
